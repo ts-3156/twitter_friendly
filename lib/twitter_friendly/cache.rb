@@ -8,7 +8,7 @@ module TwitterFriendly
     def_delegators :@client, :clear, :cleanup
 
     def initialize(*args)
-      options = TwitterFriendly::Utils.extract_options!(args)
+      options = args.extract_options!
 
       path = options[:cache_dir] || File.join('.twitter_friendly', 'cache')
       FileUtils.mkdir_p(path) unless File.exists?(path)

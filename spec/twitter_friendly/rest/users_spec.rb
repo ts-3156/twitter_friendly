@@ -46,6 +46,15 @@ module TwitterFriendly
             expect(internal_client).to receive(:users).with(*ids, {})
             instance.users(ids)
           end
+
+          unless ENV['TRAVIS']
+            context 'with real client' do
+              let(:internal_client) { client.instance_variable_get(:@twitter) }
+              it 'fetches real data' do
+                expect(client.users(ids, cache: false)).to eq(internal_client.users(ids).map(&:to_hash))
+              end
+            end
+          end
         end
 
         context 'ids.length > 100' do
@@ -53,6 +62,16 @@ module TwitterFriendly
           it do
             expect(instance).to receive(:_users).with(ids, {})
             instance.users(ids)
+          end
+
+          unless ENV['TRAVIS']
+            context 'with real client' do
+              let(:internal_client) { client.instance_variable_get(:@twitter) }
+              let(:ids) { JSON.parse(fixture('friend_ids.json')).take(101) }
+              it 'fetches real data' do
+                expect(client.users(ids, cache: false).map{|u| u[:id] }).to eq(internal_client.users(ids).map(&:to_hash).map{|u| u[:id] })
+              end
+            end
           end
         end
       end

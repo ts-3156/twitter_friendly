@@ -10,4 +10,5 @@
 *.log
 /.pryrc
 /.env
+/.twitter_friendly
 /.idea

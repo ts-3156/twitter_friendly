@@ -83,10 +83,10 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler (~> 1.17)
+  bundler
   dotenv
   pry
-  rake (~> 10.0)
+  rake
   rspec (~> 3.8)
   twitter_friendly!
 

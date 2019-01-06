@@ -1,8 +1,6 @@
 module TwitterFriendly
   module REST
     module Users
-      # include TwitterWithAutoPagination::REST::Utils
-
       def verify_credentials(options = {})
         @twitter.send(__method__, {skip_status: true}.merge(options))&.to_hash
       end
@@ -17,9 +15,6 @@ module TwitterFriendly
 
       MAX_USERS_PER_REQUEST = 100
 
-      # client.users         -> cached
-      # users(internal call) -> cached
-      # super                -> not cached
       def users(values, options = {})
         if values.size <= MAX_USERS_PER_REQUEST
           return @twitter.send(__method__, *values, options)&.compact&.map(&:to_hash)
@@ -47,7 +42,7 @@ module TwitterFriendly
           values.each_slice(MAX_USERS_PER_REQUEST).map do |targets|
             @twitter.send(:users, targets, options)
           end
-        end.flatten
+        end&.flatten&.compact&.map(&:to_hash)
       end
     end
   end
