@@ -41,7 +41,7 @@ module TwitterFriendly
 
         context 'ids > 5000' do
           let(:ids) { Array.new(5001) {id} }
-          it do
+          pending do
             expect{instance.friend_ids(ids)}.to raise_error(ArgumentError)
           end
         end

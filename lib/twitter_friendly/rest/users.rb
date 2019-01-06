@@ -17,10 +17,10 @@ module TwitterFriendly
 
       def users(values, options = {})
         if values.size <= MAX_USERS_PER_REQUEST
-          return @twitter.send(__method__, *values, options)&.compact&.map(&:to_hash)
+          @twitter.send(__method__, values, options)&.compact&.map(&:to_hash)
+        else
+          _users(values, options)
         end
-
-        _users(values, options)
       end
 
       def blocked_ids(*args)
@@ -35,9 +35,9 @@ module TwitterFriendly
         if options[:parallel]
           require 'parallel'
 
-          Parallel.map(values.each_slice(MAX_USERS_PER_REQUEST), in_threads: 10) do |targets|
-            @twitter.users(targets, options)
-          end
+          parallel(in_threads: 10) do |batch|
+            values.each_slice(MAX_USERS_PER_REQUEST) { |targets| batch.users(targets, options) }
+          end.flatten
         else
           values.each_slice(MAX_USERS_PER_REQUEST).map do |targets|
             @twitter.send(:users, targets, options)

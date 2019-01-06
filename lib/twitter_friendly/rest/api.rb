@@ -1,5 +1,6 @@
 require 'twitter_friendly/rest/utils'
 require 'twitter_friendly/rest/collector'
+require "twitter_friendly/rest/parallel"
 require 'twitter_friendly/rest/friends_and_followers'
 require 'twitter_friendly/rest/users'
 
@@ -10,6 +11,7 @@ module TwitterFriendly
     module API
       include TwitterFriendly::REST::Utils
       include TwitterFriendly::REST::Collector
+      include TwitterFriendly::REST::Parallel
       include TwitterFriendly::REST::FriendsAndFollowers
       include TwitterFriendly::REST::Users
 

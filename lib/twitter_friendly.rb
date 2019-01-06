@@ -8,6 +8,7 @@ require "twitter_friendly/logger"
 require "twitter_friendly/serializer"
 require "twitter_friendly/cache_key"
 require "twitter_friendly/cache"
+require "twitter_friendly/rate_limit"
 require "twitter_friendly/client"
 
 module TwitterFriendly

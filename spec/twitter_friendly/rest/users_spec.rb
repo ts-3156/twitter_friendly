@@ -1,7 +1,12 @@
 module TwitterFriendly
   module REST
     ::RSpec.describe Users do
-      let(:dummy_class) { Class.new {include Users} }
+      let(:dummy_class) do
+        Class.new do
+          include Parallel
+          include Users
+        end
+      end
 
       let(:instance) do
         dummy_class.new.tap{|i| i.instance_variable_set(:@twitter, Twitter::REST::Client.new) }
@@ -43,7 +48,7 @@ module TwitterFriendly
         context 'ids.length <= 100' do
           let(:ids) { [id] }
           it do
-            expect(internal_client).to receive(:users).with(*ids, {})
+            expect(internal_client).to receive(:users).with(ids, {})
             instance.users(ids)
           end
 
@@ -68,7 +73,7 @@ module TwitterFriendly
             context 'with real client' do
               let(:internal_client) { client.instance_variable_get(:@twitter) }
               let(:ids) { JSON.parse(fixture('friend_ids.json')).take(101) }
-              it 'fetches real data' do
+              skip 'fetches real data' do
                 expect(client.users(ids, cache: false).map{|u| u[:id] }).to eq(internal_client.users(ids).map(&:to_hash).map{|u| u[:id] })
               end
             end
@@ -77,7 +82,7 @@ module TwitterFriendly
       end
 
       describe '#_users' do
-        let(:ids) { [id] }
+        let(:ids) { [id, id] }
         it do
           expect(internal_client).to receive(:users).with(ids, {super_operation: :users, parallel: true})
           instance.send(:_users, ids)

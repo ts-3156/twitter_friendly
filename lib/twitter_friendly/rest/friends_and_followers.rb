@@ -9,8 +9,6 @@ module TwitterFriendly
 
       %i(friend_ids follower_ids).each do |name|
         define_method(name) do |*args|
-          raise ArgumentError.new('too many ids') if args[0].length > MAX_IDS_PER_REQUEST
-
           options = {count: MAX_IDS_PER_REQUEST, cursor: -1}.merge(args.extract_options!)
 
           collect_with_cursor do |next_cursor|
@@ -33,11 +31,17 @@ module TwitterFriendly
       end
 
       def friend_ids_and_follower_ids(*args)
-        options = args.extract_options!.merge(super_operation: :friend_ids_and_follower_ids)
+        options = {super_operation: :friend_ids_and_follower_ids, parallel: true}.merge(args.extract_options!)
 
-        parallel(in_threads: 2) do |batch|
-          batch.friend_ids(*args, options)
-          batch.follower_ids(*args, options)
+        if options[:parallel]
+          require 'parallel'
+
+          parallel(in_threads: 2) do |batch|
+            batch.friend_ids(*args, options)
+            batch.follower_ids(*args, options)
+          end
+        else
+          [@twitter.friend_ids(*args), @twitter.follower_ids(*args)]
         end
       end
 
