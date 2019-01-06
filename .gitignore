@@ -7,4 +7,7 @@
 /spec/reports/
 /tmp/
 
+*.log
+/.pryrc
+/.env
 /.idea
