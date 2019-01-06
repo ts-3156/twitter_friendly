@@ -1,7 +1,12 @@
 module TwitterFriendly
   module REST
     ::RSpec.describe FriendsAndFollowers do
-      let(:dummy_class) { Class.new {include FriendsAndFollowers} }
+      let(:dummy_class) do
+        Class.new do
+          include Collector
+          include FriendsAndFollowers
+        end
+      end
 
       let(:instance) do
         dummy_class.new.tap{|i| i.instance_variable_set(:@twitter, Twitter::REST::Client.new) }
@@ -27,7 +32,11 @@ module TwitterFriendly
 
       describe '#friend_ids' do
         context 'ids <= 5000' do
-
+          let(:ids) {[id] }
+          it do
+            expect(instance).to receive(:collect_with_cursor)
+            instance.friend_ids(ids)
+          end
         end
 
         context 'ids > 5000' do

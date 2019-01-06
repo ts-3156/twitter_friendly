@@ -1,5 +1,6 @@
 require 'forwardable'
 require 'fileutils'
+require 'logger'
 
 module TwitterFriendly
   class Logger
