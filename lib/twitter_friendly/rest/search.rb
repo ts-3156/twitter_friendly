@@ -6,7 +6,7 @@ module TwitterFriendly
 
       %i(search).each do |name|
         define_method(name) do |query, options = {}|
-          raise ArgumentError.new('Must specify a query') unless query.is_a?(String)
+          raise ArgumentError.new('You must specify a search query.') unless query.is_a?(String)
 
           total_count = options.delete(:count) || MAX_TWEETS_PER_REQUEST
           call_count = total_count / MAX_TWEETS_PER_REQUEST + (total_count % MAX_TWEETS_PER_REQUEST == 0 ? 0 : 1)
