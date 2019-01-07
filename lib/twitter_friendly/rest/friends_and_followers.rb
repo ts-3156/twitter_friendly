@@ -21,13 +21,13 @@ module TwitterFriendly
       def friends(*args)
         options = args.extract_options!.merge(super_operation: :friends)
         ids = friend_ids(*args, options)
-        _users(ids, options)
+        users(ids, options)
       end
 
       def followers(*args)
         options = args.extract_options!.merge(super_operation: :followers)
         ids = follower_ids(*args, options)
-        _users(ids, options)
+        users(ids, options)
       end
 
       def friend_ids_and_follower_ids(*args)

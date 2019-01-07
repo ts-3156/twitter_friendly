@@ -53,11 +53,19 @@ module TwitterFriendly
       payload.delete(:name)
       operation = payload.delete(:operation)
       name = "  TW::#{operation.capitalize} #{payload[:args][0]} (#{event.duration.round(1)}ms)"
-      name = color(name, %i(encode decode).include?(operation.to_sym) ? YELLOW : CYAN, true)
+      c =
+          if %i(encode decode).include?(operation.to_sym)
+            YELLOW
+          elsif %i(collect).include?(operation.to_sym)
+            BLUE
+          else
+            CYAN
+          end
+      name = color(name, c, true)
       debug { "  #{'  ' if payload[:tf_super_operation]}#{name}#{" #{truncated_payload(payload)}" unless payload.empty?}" }
     end
 
-    %w(request encode decode).each do |operation|
+    %w(request encode decode collect).each do |operation|
       class_eval <<-METHOD, __FILE__, __LINE__ + 1
         def #{operation}(event)
           event.payload[:name] = '#{operation}'

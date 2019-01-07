@@ -8,7 +8,7 @@ module TwitterFriendly
         in_threads = options.fetch(:in_threads, batch.size)
 
         ::Parallel.map_with_index(batch, in_threads: in_threads) do |args, i|
-          {i: i, result: send(*args)}
+          {i: i, result: send(*args)} # Cached here
         end.sort_by { |q| q[:i] }.map { |q| q[:result] }
       end
 

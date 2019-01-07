@@ -3,6 +3,7 @@ require 'twitter_friendly/rest/collector'
 require "twitter_friendly/rest/parallel"
 require 'twitter_friendly/rest/friends_and_followers'
 require 'twitter_friendly/rest/users'
+require 'twitter_friendly/rest/timelines'
 
 require 'twitter_friendly/caching'
 
@@ -14,6 +15,7 @@ module TwitterFriendly
       include TwitterFriendly::REST::Parallel
       include TwitterFriendly::REST::FriendsAndFollowers
       include TwitterFriendly::REST::Users
+      include TwitterFriendly::REST::Timelines
 
       include TwitterFriendly::Caching
     end

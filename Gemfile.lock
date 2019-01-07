@@ -3,7 +3,7 @@ PATH
   specs:
     twitter_friendly (0.1.0)
       activesupport (>= 4.2, < 6.0)
-      oj
+      oj (~> 3.7.6)
       parallel (~> 1.12.1)
       twitter (~> 6.2.0)
 
