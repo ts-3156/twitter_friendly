@@ -16,6 +16,8 @@ module TwitterFriendly
         follower_ids
         memberships
         list_members
+
+        retweeters_ids
       ).each do |name|
       define_method(name) do |*args|
         options = args.extract_options!

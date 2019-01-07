@@ -7,6 +7,7 @@ require 'twitter_friendly/rest/timelines'
 require 'twitter_friendly/rest/search'
 require 'twitter_friendly/rest/favorites'
 require 'twitter_friendly/rest/lists'
+require 'twitter_friendly/rest/tweets'
 
 require 'twitter_friendly/caching'
 
@@ -22,6 +23,7 @@ module TwitterFriendly
       include TwitterFriendly::REST::Search
       include TwitterFriendly::REST::Favorites
       include TwitterFriendly::REST::Lists
+      include TwitterFriendly::REST::Tweets
 
       include TwitterFriendly::Caching
     end
