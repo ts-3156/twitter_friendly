@@ -37,6 +37,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "activesupport", [">= 4.2", "< 6.0"]
   spec.add_dependency 'twitter', '~> 6.2.0'
   spec.add_dependency 'parallel', '~> 1.12.1'
+  spec.add_dependency 'oj', '~> 3.7.6'
 
   spec.add_development_dependency "bundler"
   spec.add_development_dependency "rake"
