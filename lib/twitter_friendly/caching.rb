@@ -44,7 +44,7 @@ module TwitterFriendly
         Instrumenter.start_processing(name, options)
 
         Instrumenter.complete_processing(name, options) do
-          super(*args, options)
+          options.empty? ? super(*args) : super(*args, options)
         end
       end
     end
