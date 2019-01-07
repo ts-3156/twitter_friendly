@@ -10,7 +10,7 @@ module TwitterFriendly
       it do
         allow(klass).to receive(:method_identifier).with(method, id, options).and_return('MI')
         allow(klass).to receive(:options_identifier).with(options).and_return('OI')
-        expect(klass.gen(method, id, options)).to eq("#{method}#{delim}MI#{delim}OI")
+        expect(klass.gen(method, id, options)).to eq("v1#{delim}#{method}#{delim}MI#{delim}OI")
       end
     end
 
@@ -96,9 +96,9 @@ module TwitterFriendly
     end
 
     describe '.options_identifier' do
-      it 'ignores hash, call_count, call_limit and super_operation' do
-        %i(hash call_count call_limit super_operation).each do |key|
-          expect(klass.send(:options_identifier, {key => 'anything'})).to eq("options#{delim}empty")
+      it 'ignores hash, call_count, call_limit, super_operation and parallel' do
+        %i(hash call_count call_limit super_operation parallel).each do |key|
+          expect(klass.send(:options_identifier, {key => 'anything'})).to eq(nil)
         end
       end
 

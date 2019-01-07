@@ -4,11 +4,15 @@ module TwitterFriendly
   class Serializer
     class << self
       def encode(obj, options = {})
-        (!!obj == obj) ? obj : coder.encode(obj)
+        Instrumenter.perform_encode(options) do
+          (!!obj == obj) ? obj : coder.encode(obj)
+        end
       end
 
       def decode(str, options = {})
-        str.kind_of?(String) ? coder.decode(str) : str
+        Instrumenter.perform_decode(options) do
+          str.kind_of?(String) ? coder.decode(str) : str
+        end
       end
 
       def coder
@@ -20,6 +24,21 @@ module TwitterFriendly
       end
 
       private
+
+      module Instrumenter
+
+        module_function
+
+        def perform_encode(options, &block)
+          payload = {operation: 'encode', args: options[:args]}
+          ::ActiveSupport::Notifications.instrument('encode.twitter_friendly', payload) { yield(payload) }
+        end
+
+        def perform_decode(options, &block)
+          payload = {operation: 'decode', args: options[:args]}
+          ::ActiveSupport::Notifications.instrument('decode.twitter_friendly', payload) { yield(payload) }
+        end
+      end
 
       class Coder
         def initialize(coder)

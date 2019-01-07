@@ -19,10 +19,11 @@ module TwitterFriendly
       ).each do |name|
       define_method(name) do |*args|
         options = args.extract_options!
+        Instrumenter.start_processing(name, options)
 
-        Instrumenter.api_call(name, options) do
+        Instrumenter.complete_processing(name, options) do
           do_request =
-            proc { Instrumenter.perform_request(name, options) { options.empty? ? super(*args) : super(*args, options) } }
+              proc { Instrumenter.perform_request(name, options) { options.empty? ? super(*args) : super(*args, options) } }
 
           if Utils.cache_disabled?(options)
             do_request.call
@@ -38,7 +39,11 @@ module TwitterFriendly
     %i(friends followers friends_and_followers).each do |name|
       define_method(name) do |*args|
         options = args.extract_options!
-        Instrumenter.api_call(name, options) { super(*args, options) }
+        Instrumenter.start_processing(name, options)
+
+        Instrumenter.complete_processing(name, options) do
+          super(*args, options)
+        end
       end
     end
 
@@ -46,14 +51,19 @@ module TwitterFriendly
 
       module_function
 
-      def api_call(operation, options)
+      def start_processing(operation, options)
         payload = {operation: operation}.merge(options)
-        ActiveSupport::Notifications.instrument('api_call.twitter', payload) { yield(payload) }
+        ::ActiveSupport::Notifications.instrument('start_processing.twitter_friendly', payload) {}
+      end
+
+      def complete_processing(operation, options)
+        payload = {operation: operation}.merge(options)
+        ::ActiveSupport::Notifications.instrument('complete_processing.twitter_friendly', payload) { yield(payload) }
       end
 
       def perform_request(caller, options, &block)
         payload = {operation: 'request', args: [caller, options]}
-        ActiveSupport::Notifications.instrument('request.twitter', payload) { yield(payload) }
+        ::ActiveSupport::Notifications.instrument('request.twitter_friendly', payload) { yield(payload) }
       end
     end
 

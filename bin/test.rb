@@ -70,12 +70,10 @@ friends = followers = []
   eval("#{method}=users")
 end
 
-exit
-
 client.cache.clear
 
 users1, users2 = client.friends_and_followers
-cached_users1, cached_users2 = client.friends_and_followes
+cached_users1, cached_users2 = client.friends_and_followers
 
 puts 'friends_and_followers'
 puts "  fetch #{users1.size}, cache #{cached_users1.size}"

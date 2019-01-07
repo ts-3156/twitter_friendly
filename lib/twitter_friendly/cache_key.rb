@@ -3,10 +3,11 @@ require 'digest/md5'
 module TwitterFriendly
   class CacheKey
     DELIM = ':'
+    VERSION = '1'
 
     class << self
       def gen(method, user, options = {})
-        "#{method}#{DELIM}#{method_identifier(method, user, options)}#{DELIM}#{options_identifier(options)}"
+        ["v#{VERSION}", method, method_identifier(method, user, options), options_identifier(options)].compact.join(DELIM)
       end
 
       private
@@ -33,14 +34,13 @@ module TwitterFriendly
       end
 
       def options_identifier(options)
-        options = options.except(:hash, :call_count, :call_limit, :super_operation)
-        str =
+        options = options.except(:hash, :call_count, :call_limit, :super_operation, :parallel)
             if options.empty?
-              'empty'
+              nil
             else
-              options.map { |k, v| "#{k}=#{v}" }.join('&')
+              str = options.map { |k, v| "#{k}=#{v}" }.join('&')
+              "options#{DELIM}#{str}"
             end
-        "options#{DELIM}#{str}"
       end
 
       def hexdigest(ary)
