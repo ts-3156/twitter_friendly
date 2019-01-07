@@ -16,13 +16,21 @@ module TwitterFriendly
 
     def fetch(method, user, options = {}, &block)
       key = CacheKey.gen(method, user, options.except(:args))
+      super_operation = options[:args].length >= 2 && options[:args][1][:super_operation]
 
       block_result = nil
-      fetch_result =
-          @client.fetch(key) do
+      blk =
+          Proc.new do
             block_result = yield
             encode(block_result, args: options[:args])
           end
+
+      fetch_result =
+        if super_operation
+          @client.fetch(key, tf_super_operation: super_operation, &blk)
+        else
+          @client.fetch(key, &blk)
+        end
 
       block_result ? block_result : decode(fetch_result, args: options[:args])
     end

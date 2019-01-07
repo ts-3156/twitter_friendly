@@ -13,8 +13,18 @@ module TwitterFriendly
     def initialize(*args)
       options = args.extract_options!
 
-      @cache = TwitterFriendly::Cache.new(options)
       @logger = TwitterFriendly::Logger.new(options)
+
+      unless subscriber_attached?
+        if @logger.level == ::Logger::DEBUG
+          @@subscriber_attached = true
+          TwitterFriendly::Logging.logger = @logger
+          TwitterFriendly::TFLogSubscriber.attach_to :twitter_friendly
+          TwitterFriendly::ASLogSubscriber.attach_to :active_support
+        end
+      end
+
+      @cache = TwitterFriendly::Cache.new(options)
       @twitter = Twitter::REST::Client.new(options)
     end
 
@@ -28,6 +38,10 @@ module TwitterFriendly
 
     def internal_client
       @twitter
+    end
+
+    def subscriber_attached?
+      @@subscriber_attached ||= false
     end
   end
 
