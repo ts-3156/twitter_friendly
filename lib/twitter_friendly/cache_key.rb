@@ -45,7 +45,7 @@ module TwitterFriendly
 
       def options_identifier(method, options)
         # TODO 内部的な値はすべてprefix _tf_ をつける
-        opt = options.except(:hash, :call_count, :call_limit, :super_operation, :recursive, :parallel)
+        opt = options.except(:hash, :call_count, :call_limit, :super_operation, :super_super_operation, :recursive, :parallel)
         opt[:in] = options[:super_operation] if %i(collect_with_max_id collect_with_cursor).include?(method)
 
         if opt.empty?

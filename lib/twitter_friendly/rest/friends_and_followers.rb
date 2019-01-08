@@ -9,7 +9,12 @@ module TwitterFriendly
 
       %i(friend_ids follower_ids).each do |name|
         define_method(name) do |*args|
-          args << {count: MAX_IDS_PER_REQUEST}.merge(args.extract_options!)
+          options = {count: MAX_IDS_PER_REQUEST}.merge(args.extract_options!)
+          if options[:super_operation]
+            options[:super_super_operation] = options[:super_operation]
+            options[:super_operation] = name
+          end
+          args << options
           fetch_resources_with_cursor(name, args)
         end
       end
@@ -37,7 +42,7 @@ module TwitterFriendly
             batch.follower_ids(*args, options)
           end
         else
-          [@twitter.friend_ids(*args), @twitter.follower_ids(*args)]
+          [friend_ids(*args, options), follower_ids(*args, options)]
         end
       end
 

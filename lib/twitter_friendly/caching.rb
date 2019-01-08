@@ -33,6 +33,7 @@ module TwitterFriendly
       follower_ids
       friends
       followers
+      friend_ids_and_follower_ids
       friends_and_followers
       search
       favorites

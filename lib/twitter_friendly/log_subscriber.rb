@@ -14,6 +14,10 @@ module TwitterFriendly
       {args: args}.merge(payload.except(:args)).inspect
     end
 
+    def nested_indent(payload)
+      (payload[:super_operation] ? '  ' : '') + (payload[:super_super_operation] ? '  ' : '') + (payload[:tf_super_operation] ? '  ' : '')
+    end
+
     module_function
 
     def logger
@@ -30,10 +34,10 @@ module TwitterFriendly
 
     def start_processing(event)
       payload = event.payload
-      name = "TF::Started #{payload.delete(:operation)}"
+      name = "#{nested_indent(payload)}TF::Started #{payload.delete(:operation)}"
       debug do
         if payload[:super_operation]
-          "  #{name} in #{payload[:super_operation]} at #{Time.now}"
+          "#{name} in #{payload[:super_operation]} at #{Time.now}"
         else
           "#{name} at #{Time.now}"
         end
@@ -44,7 +48,7 @@ module TwitterFriendly
       payload = event.payload
       name = "TF::Completed #{payload.delete(:operation)} in #{event.duration.round(1)}ms"
       debug do
-        "#{'  ' if payload[:super_operation]}#{name}#{" #{truncated_payload(payload)}" unless payload.empty?}"
+        "#{nested_indent(payload)}#{name}#{" #{truncated_payload(payload)}" unless payload.empty?}"
       end
     end
 
@@ -67,7 +71,7 @@ module TwitterFriendly
             CYAN
           end
       name = color(name, c, true)
-      debug { "  #{'  ' if payload[:tf_super_operation]}#{name}#{" #{truncated_payload(payload)}" unless payload.empty?}" }
+      debug { "  #{nested_indent(payload)}#{name}#{" #{truncated_payload(payload)}" unless payload.empty?}" }
     end
 
     %w(request encode decode collect).each do |operation|
@@ -87,9 +91,9 @@ module TwitterFriendly
       payload = event.payload
       operation = payload[:super_operation] == :fetch ? :fetch : payload[:name]
       hit = %i(read fetch).include?(operation.to_sym) && payload[:hit]
-      name = "AS::#{operation.capitalize}#{' (Hit)' if hit} #{payload[:key].split(':')[1]} (#{event.duration.round(1)}ms)"
+      name = "  AS::#{operation.capitalize}#{' (Hit)' if hit} #{payload[:key].split(':')[1]} (#{event.duration.round(1)}ms)"
       name = color(name, MAGENTA, true)
-      debug { "  #{'  ' if payload[:tf_super_operation]}#{name} #{(payload.except(:name, :expires_in, :super_operation, :hit, :race_condition_ttl, :tf_super_operation).inspect)}" }
+      debug { "#{nested_indent(payload)}#{name} #{(payload.except(:name, :expires_in, :super_operation, :hit, :race_condition_ttl, :tf_super_operation).inspect)}" }
     end
 
     # Ignore generate and fetch_hit
