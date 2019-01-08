@@ -52,7 +52,12 @@ module TwitterFriendly
       payload = event.payload
       payload.delete(:name)
       operation = payload.delete(:operation)
-      name = "  TW::#{operation.capitalize} #{payload[:args][0]} (#{event.duration.round(1)}ms)"
+      name =
+          if operation.to_sym == :collect
+            "  TW::#{operation.capitalize} #{payload[:args].last[:super_operation]} in #{payload[:args][0]} (#{event.duration.round(1)}ms)"
+          else
+            "  TW::#{operation.capitalize} #{payload[:args][0]} (#{event.duration.round(1)}ms)"
+          end
       c =
           if %i(encode decode).include?(operation.to_sym)
             YELLOW
@@ -80,9 +85,11 @@ module TwitterFriendly
 
     def cache_any(event)
       payload = event.payload
-      name = "AS::#{payload[:name].capitalize} #{payload[:key].split(':')[1]} (#{event.duration.round(1)}ms)"
+      operation = payload[:super_operation] == :fetch ? :fetch : payload[:name]
+      hit = %i(read fetch).include?(operation.to_sym) && payload[:hit]
+      name = "AS::#{operation.capitalize}#{' (Hit)' if hit} #{payload[:key].split(':')[1]} (#{event.duration.round(1)}ms)"
       name = color(name, MAGENTA, true)
-      debug { "  #{'  ' if payload[:tf_super_operation]}#{name} #{(payload.except(:name, :expires_in, :race_condition_ttl, :tf_super_operation).inspect)}" }
+      debug { "  #{'  ' if payload[:tf_super_operation]}#{name} #{(payload.except(:name, :expires_in, :super_operation, :hit, :race_condition_ttl, :tf_super_operation).inspect)}" }
     end
 
     # Ignore generate and fetch_hit

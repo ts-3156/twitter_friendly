@@ -8,7 +8,7 @@ module TwitterFriendly
       def memberships(*args)
         options = {count: MAX_LISTS_PER_REQUEST, cursor: -1}.merge(args.extract_options!)
 
-        collect_with_cursor do |next_cursor|
+        collect_with_cursor(args[0], [], -1, super_operation: __method__) do |next_cursor|
           options[:cursor] = next_cursor unless next_cursor.nil?
           @twitter.send(:memberships, *args, options)
         end
@@ -20,7 +20,7 @@ module TwitterFriendly
       def list_members(*args)
         options = {count: MAX_MEMBERS_PER_REQUEST, skip_status: 1, cursor: -1}.merge(args.extract_options!)
 
-        collect_with_cursor do |next_cursor|
+        collect_with_cursor(args[0], [], -1, super_operation: __method__) do |next_cursor|
           options[:cursor] = next_cursor unless next_cursor.nil?
           @twitter.send(:list_members, *args, options)
         end

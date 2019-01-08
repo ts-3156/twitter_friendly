@@ -11,7 +11,7 @@ module TwitterFriendly
         define_method(name) do |*args|
           options = {count: MAX_IDS_PER_REQUEST, cursor: -1}.merge(args.extract_options!)
 
-          collect_with_cursor do |next_cursor|
+          collect_with_cursor(args[0], [], -1, super_operation: name) do |next_cursor|
             options[:cursor] = next_cursor unless next_cursor.nil?
             @twitter.send(name, *args, options)
           end

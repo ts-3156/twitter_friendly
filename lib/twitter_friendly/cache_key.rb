@@ -7,10 +7,18 @@ module TwitterFriendly
 
     class << self
       def gen(method, user, options = {})
-        ["v#{VERSION}", method, method_identifier(method, user, options), options_identifier(options)].compact.join(DELIM)
+        [version,
+         method,
+         method_identifier(method, user, options),
+         options_identifier(method, options)
+        ].compact.join(DELIM)
       end
 
       private
+
+      def version
+        'v' + VERSION
+      end
 
       def method_identifier(method, user, options)
           case
@@ -33,14 +41,17 @@ module TwitterFriendly
         end
       end
 
-      def options_identifier(options)
-        options = options.except(:hash, :call_count, :call_limit, :super_operation, :parallel)
-            if options.empty?
-              nil
-            else
-              str = options.map { |k, v| "#{k}=#{v}" }.join('&')
-              "options#{DELIM}#{str}"
-            end
+      def options_identifier(method, options)
+        # TODO 内部的な値はすべてprefix _tf_ をつける
+        opt = options.except(:hash, :call_count, :call_limit, :super_operation, :recursive, :parallel)
+        opt[:in] = options[:super_operation] if %i(collect_with_max_id collect_with_cursor).include?(method)
+
+        if opt.empty?
+          nil
+        else
+          str = opt.map {|k, v| "#{k}=#{v}"}.join('&')
+          "options#{DELIM}#{str}"
+        end
       end
 
       def hexdigest(ary)

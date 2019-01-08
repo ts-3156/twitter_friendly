@@ -49,6 +49,7 @@ GEM
       method_source (~> 0.9.0)
     public_suffix (3.0.3)
     rake (12.3.2)
+    rb-readline (0.5.5)
     rspec (3.8.0)
       rspec-core (~> 3.8.0)
       rspec-expectations (~> 3.8.0)
@@ -89,6 +90,7 @@ DEPENDENCIES
   dotenv
   pry
   rake
+  rb-readline
   rspec (~> 3.8)
   twitter_friendly!
 

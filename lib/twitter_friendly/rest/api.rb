@@ -26,6 +26,7 @@ module TwitterFriendly
       include TwitterFriendly::REST::Tweets
 
       include TwitterFriendly::Caching
+      include TwitterFriendly::REST::Collector::Caching
     end
   end
 end

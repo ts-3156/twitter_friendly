@@ -3,7 +3,7 @@ module TwitterFriendly
     module Collector
       def collect_with_max_id(collection = [], max_id = nil, &block)
         tweets = nil
-        Instrumenter.perform_collect_with_max_id(args: [__method__, max_id: max_id]) do
+        Instrumenter.perform_request(args: [__method__, max_id: max_id]) do
           tweets = yield(max_id)
         end
         return collection if tweets.nil?
@@ -11,31 +11,56 @@ module TwitterFriendly
         tweets.empty? ? collection.flatten : collect_with_max_id(collection, tweets.last.id - 1, &block)
       end
 
-      def collect_with_cursor(collection = [], cursor = nil, &block)
-        response = nil
-        Instrumenter.perform_collect_with_max_id(args: [__method__, cursor: cursor]) do
-          response = yield(cursor)
-        end
+      def collect_with_cursor(user, collection, cursor, options = {}, &block)
+        fetch_options = options.dup
+        fetch_options[:cursor] = cursor
+        fetch_options.merge!(args: [__method__, fetch_options], hash: credentials_hash)
+
+        # TODO Handle {cache: false} option
+        response =
+          @cache.fetch(__method__, user, fetch_options) do
+            Instrumenter.perform_request(args: [__method__, cursor: cursor, super_operation: options[:super_operation]]) do
+              yield(cursor).attrs
+            end
+          end
         return collection if response.nil?
 
+        options[:recursive] = true
+
         # Notice: If you call response.to_a, it automatically fetch all results and the results are not cached.
-        collection += (response.attrs[:ids] || response.attrs[:users] || response.attrs[:lists])
-        response.attrs[:next_cursor].zero? ? collection.flatten : collect_with_cursor(collection, response.attrs[:next_cursor], &block)
-      end
-    end
-
-    module Instrumenter
-
-      module_function
-
-      def perform_collect_with_max_id(options, &block)
-        payload = {operation: 'collect', args: options[:args]}
-        ::ActiveSupport::Notifications.instrument('collect.twitter_friendly', payload) { yield(payload) }
+        collection.concat (response[:ids] || response[:users] || response[:lists])
+        response[:next_cursor].zero? ? collection.flatten : collect_with_cursor(user, collection, response[:next_cursor], options, &block)
       end
 
-      def perform_collect_with_cursor(options, &block)
-        payload = {operation: 'collect', args: options[:args]}
-        ::ActiveSupport::Notifications.instrument('collect.twitter_friendly', payload) { yield(payload) }
+      module Instrumenter
+
+        module_function
+
+        # 他のメソッドと違い再帰的に呼ばれるため、全体をキャッシュすると、すべてを再帰的にキャッシュしてしまう。
+        # それを防ぐために、特別にここでキャッシュの処理を登録している。
+
+        def perform_request(options, &block)
+          payload = {operation: 'collect', args: options[:args]}
+          ::ActiveSupport::Notifications.instrument('collect.twitter_friendly', payload) { yield(payload) }
+        end
+      end
+
+      module Caching
+        %i(
+          collect_with_cursor
+        ).each do |name|
+          define_method(name) do |*args, &block|
+            options = args.extract_options!
+            do_request = Proc.new { options.empty? ? super(*args, &block) : super(*args, options, &block) }
+
+            if options[:recursive]
+              do_request.call
+            else
+              TwitterFriendly::Caching::Instrumenter.start_processing(name, options)
+              TwitterFriendly::Caching::Instrumenter.complete_processing(name, options, &do_request)
+            end
+          end
+        end
       end
     end
   end
