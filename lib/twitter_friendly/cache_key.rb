@@ -25,6 +25,8 @@ module TwitterFriendly
           when method == :search                    then "query#{DELIM}#{user}"
           when method == :friendship?               then "from#{DELIM}#{user[0]}#{DELIM}to#{DELIM}#{user[1]}"
           when method == :list_members              then "list_id#{DELIM}#{user}"
+          when method == :collect_with_max_id       then method_identifier(options[:super_operation], user, options)
+          when method == :collect_with_cursor       then method_identifier(options[:super_operation], user, options)
           when user.nil? && options[:hash].present? then "token-hash#{DELIM}#{options[:hash]}"
           else user_identifier(user)
           end

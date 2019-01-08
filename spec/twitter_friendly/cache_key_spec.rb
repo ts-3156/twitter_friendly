@@ -9,7 +9,7 @@ module TwitterFriendly
     describe '.gen' do
       it do
         allow(klass).to receive(:method_identifier).with(method, id, options).and_return('MI')
-        allow(klass).to receive(:options_identifier).with(options).and_return('OI')
+        allow(klass).to receive(:options_identifier).with(method, options).and_return('OI')
         expect(klass.gen(method, id, options)).to eq("v1#{delim}#{method}#{delim}MI#{delim}OI")
       end
     end
@@ -98,12 +98,12 @@ module TwitterFriendly
     describe '.options_identifier' do
       it 'ignores hash, call_count, call_limit, super_operation and parallel' do
         %i(hash call_count call_limit super_operation parallel).each do |key|
-          expect(klass.send(:options_identifier, {key => 'anything'})).to eq(nil)
+          expect(klass.send(:options_identifier, :something, {key => 'anything'})).to eq(nil)
         end
       end
 
       it 'encodes Hash to String' do
-        expect(klass.send(:options_identifier, key: 'anything', key2: 'something')).to eq("options#{delim}key=anything&key2=something")
+        expect(klass.send(:options_identifier, :something, key: 'anything', key2: 'something')).to eq("options#{delim}key=anything&key2=something")
       end
     end
 

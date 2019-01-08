@@ -9,12 +9,8 @@ module TwitterFriendly
 
       %i(friend_ids follower_ids).each do |name|
         define_method(name) do |*args|
-          options = {count: MAX_IDS_PER_REQUEST, cursor: -1}.merge(args.extract_options!)
-
-          collect_with_cursor(args[0], [], -1, super_operation: name) do |next_cursor|
-            options[:cursor] = next_cursor unless next_cursor.nil?
-            @twitter.send(name, *args, options)
-          end
+          args << {count: MAX_IDS_PER_REQUEST}.merge(args.extract_options!)
+          fetch_resources_with_cursor(name, args)
         end
       end
 

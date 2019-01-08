@@ -6,11 +6,6 @@ module TwitterFriendly
       user
       users
       blocked_ids
-      home_timeline
-      user_timeline
-      mentions_timeline
-      search
-      favorites
       friendship?
     ).each do |name|
       define_method(name) do |*args|
@@ -39,6 +34,11 @@ module TwitterFriendly
       friends
       followers
       friends_and_followers
+      search
+      favorites
+      home_timeline
+      user_timeline
+      mentions_timeline
       memberships
       list_members
       retweeters_ids

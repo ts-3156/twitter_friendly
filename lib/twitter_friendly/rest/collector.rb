@@ -1,28 +1,38 @@
 module TwitterFriendly
   module REST
     module Collector
-      def collect_with_max_id(collection = [], max_id = nil, &block)
-        tweets = nil
-        Instrumenter.perform_request(args: [__method__, max_id: max_id]) do
-          tweets = yield(max_id)
-        end
+      def collect_with_max_id(user, collection, max_id, options, &block)
+        fetch_options = options.dup
+        fetch_options[:max_id] = max_id
+        fetch_options.merge!(args: [__method__, fetch_options], hash: credentials_hash)
+
+        # TODO Handle {cache: false} option
+        tweets =
+            @cache.fetch(__method__, user, fetch_options) do
+              Instrumenter.perform_request(args: [__method__, max_id: max_id, super_operation: options[:super_operation]]) do
+                yield(max_id)
+              end
+            end
         return collection if tweets.nil?
-        collection += tweets
-        tweets.empty? ? collection.flatten : collect_with_max_id(collection, tweets.last.id - 1, &block)
+
+        options[:recursive] = true
+
+        collection.concat tweets
+        tweets.empty? ? collection.flatten : collect_with_max_id(user, collection, tweets.last[:id] - 1, options, &block)
       end
 
-      def collect_with_cursor(user, collection, cursor, options = {}, &block)
+      def collect_with_cursor(user, collection, cursor, options, &block)
         fetch_options = options.dup
         fetch_options[:cursor] = cursor
         fetch_options.merge!(args: [__method__, fetch_options], hash: credentials_hash)
 
         # TODO Handle {cache: false} option
         response =
-          @cache.fetch(__method__, user, fetch_options) do
-            Instrumenter.perform_request(args: [__method__, cursor: cursor, super_operation: options[:super_operation]]) do
-              yield(cursor).attrs
+            @cache.fetch(__method__, user, fetch_options) do
+              Instrumenter.perform_request(args: [__method__, cursor: cursor, super_operation: options[:super_operation]]) do
+                yield(cursor).attrs
+              end
             end
-          end
         return collection if response.nil?
 
         options[:recursive] = true
@@ -47,6 +57,7 @@ module TwitterFriendly
 
       module Caching
         %i(
+          collect_with_max_id
           collect_with_cursor
         ).each do |name|
           define_method(name) do |*args, &block|
