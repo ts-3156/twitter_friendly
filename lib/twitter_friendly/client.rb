@@ -2,12 +2,14 @@ require 'forwardable'
 
 require 'twitter_friendly/caching_and_logging'
 require 'twitter_friendly/rest/api'
+require 'twitter_friendly/utils'
 
 module TwitterFriendly
   class Client
     extend Forwardable
     def_delegators :@twitter, :access_token, :access_token_secret, :consumer_key, :consumer_secret
 
+    include TwitterFriendly::Utils
     include TwitterFriendly::REST::API
     include TwitterFriendly::RateLimit
 

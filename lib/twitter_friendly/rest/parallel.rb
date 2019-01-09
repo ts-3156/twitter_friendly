@@ -14,14 +14,19 @@ module TwitterFriendly
 
       class Arguments < Array
         %i(
-        users
-        friend_ids
-        follower_ids
-        friends
-        followers
-      ).each do |name|
+          users
+          friend_ids
+          follower_ids
+          friends
+          followers
+          home_timeline
+          user_timeline
+          mentions_timeline
+          search
+          favorites
+        ).each do |name|
           define_method(name) do |*args|
-            send(:<< , [name, *args])
+            send(:<<, [name, *args])
           end
         end
       end

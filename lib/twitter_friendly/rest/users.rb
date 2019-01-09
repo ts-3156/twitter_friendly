@@ -58,8 +58,8 @@ module TwitterFriendly
             if options[:recursive]
               do_request.call
             else
-              TwitterFriendly::Caching::Instrumenter.start_processing(name, options)
-              TwitterFriendly::Caching::Instrumenter.complete_processing(name, options, &do_request)
+              TwitterFriendly::CachingAndLogging::Instrumenter.start_processing(name, options)
+              TwitterFriendly::CachingAndLogging::Instrumenter.complete_processing(name, options, &do_request)
             end
           end
         end
