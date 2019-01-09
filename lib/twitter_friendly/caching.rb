@@ -4,7 +4,6 @@ module TwitterFriendly
       verify_credentials
       user?
       user
-      users
       blocked_ids
       friendship?
     ).each do |name|

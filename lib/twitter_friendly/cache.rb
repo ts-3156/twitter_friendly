@@ -26,33 +26,27 @@ module TwitterFriendly
     # @option options [Bool] :recursive
     def fetch(method, user, options = {}, &block)
       key = CacheKey.gen(method, user, options.except(:args))
-      super_operation = options[:args].length >= 2 && options[:args][1][:super_operation]
 
       block_result = nil
       blk =
           Proc.new do
             block_result = yield
-            encode(block_result, args: options[:args])
+            encode(block_result, options[:args])
           end
 
-      fetch_result =
-        if super_operation
-          @client.fetch(key, tf_super_operation: super_operation, &blk)
-        else
-          @client.fetch(key, &blk)
-        end
+      fetch_result = @client.fetch(key, &blk)
 
-      block_result ? block_result : decode(fetch_result, args: options[:args])
+      block_result ? block_result : decode(fetch_result, options[:args])
     end
 
     private
 
-    def encode(obj, options)
-      Serializer.encode(obj, options)
+    def encode(obj, args)
+      Serializer.encode(obj, args: args)
     end
 
-    def decode(str, options)
-      Serializer.decode(str, options)
+    def decode(str, args)
+      Serializer.decode(str, args: args)
     end
   end
 end

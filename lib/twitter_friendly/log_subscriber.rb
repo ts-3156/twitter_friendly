@@ -15,7 +15,9 @@ module TwitterFriendly
     end
 
     def indentation(payload)
-      (payload[:super_operation] ? '  ' : '') + (payload[:super_super_operation] ? '  ' : '') + (payload[:name] == 'write' ? '  ' : '')
+      (payload[:super_operation] ? '  ' : '') +
+          (payload[:super_super_operation] ? '  ' : '') +
+          (payload[:name] == 'write' ? '  ' : '')
     end
 
     module_function
@@ -97,7 +99,8 @@ module TwitterFriendly
         hit = %i(read fetch).include?(operation.to_sym) && payload[:hit] ? ' (Hit)' : ''
         name = "  AS::#{operation.capitalize}#{hit} #{payload[:key].split(':')[1]} (#{event.duration.round(1)}ms)"
         name = color(name, MAGENTA, true)
-        "#{indentation(payload)}#{name} #{(payload.except(:name, :expires_in, :super_operation, :hit, :race_condition_ttl, :tf_super_operation).inspect)}"
+        # :name, :expires_in, :super_operation, :hit, :race_condition_ttl, :tf_super_operation, :tf_super_super_operation
+        "#{indentation(payload)}#{name} #{(payload.slice(:key).inspect)}"
       end
     end
 

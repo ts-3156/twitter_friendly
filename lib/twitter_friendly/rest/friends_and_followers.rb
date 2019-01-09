@@ -25,22 +25,31 @@ module TwitterFriendly
         end
       end
 
+      # @return [Hash]
+      #
+      # @overload friends(options = {})
+      # @overload friends(user, options = {})
+      #
+      # @param user [Integer, String] A Twitter user ID or screen name.
+      #
+      # @option options [Bool] :parallel
       def friends(*args)
-        options = args.extract_options!.merge(super_operation: :friends)
-        ids = friend_ids(*args, options)
+        options = {super_operation: :friends, parallel: true}.merge(args.extract_options!)
+        ids = friend_ids(*args, options.except(:parallel))
         users(ids, options)
       end
 
       def followers(*args)
-        options = args.extract_options!.merge(super_operation: :followers)
-        ids = follower_ids(*args, options)
+        options = {super_operation: :followers, parallel: true}.merge(args.extract_options!)
+        ids = follower_ids(*args, options.except(:parallel))
         users(ids, options)
       end
 
       def friend_ids_and_follower_ids(*args)
         options = {super_operation: :friend_ids_and_follower_ids, parallel: true}.merge(args.extract_options!)
+        is_parallel = options.delete(:parallel)
 
-        if options[:parallel]
+        if is_parallel
           require 'parallel'
 
           parallel(in_threads: 2) do |batch|
