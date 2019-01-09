@@ -15,7 +15,7 @@ module TwitterFriendly
     end
 
     def nested_indent(payload)
-      (payload[:super_operation] ? '  ' : '') + (payload[:super_super_operation] ? '  ' : '') + (payload[:tf_super_operation] ? '  ' : '')
+      (payload[:super_operation] ? '  ' : '') + (payload[:super_super_operation] ? '  ' : '')
     end
 
     module_function
@@ -52,29 +52,31 @@ module TwitterFriendly
       end
     end
 
+    def collect(event)
+      payload = event.payload
+      payload.delete(:name)
+      operation = payload.delete(:operation)
+      name = "  TW::#{operation.capitalize} #{payload[:args].last[:super_operation]} in #{payload[:args][0]} (#{event.duration.round(1)}ms)"
+      name = color(name, BLUE, true)
+      debug { "  #{nested_indent(payload)}#{name}#{" #{payload[:args][1]}" unless payload.empty?}" }
+    end
+
     def twitter_friendly_any(event)
       payload = event.payload
       payload.delete(:name)
       operation = payload.delete(:operation)
-      name =
-          if operation.to_sym == :collect
-            "  TW::#{operation.capitalize} #{payload[:args].last[:super_operation]} in #{payload[:args][0]} (#{event.duration.round(1)}ms)"
-          else
-            "  TW::#{operation.capitalize} #{payload[:args][0]} (#{event.duration.round(1)}ms)"
-          end
+      name = "  TW::#{operation.capitalize} #{payload[:args][0]} (#{event.duration.round(1)}ms)"
       c =
           if %i(encode decode).include?(operation.to_sym)
             YELLOW
-          elsif %i(collect).include?(operation.to_sym)
-            BLUE
           else
             CYAN
           end
       name = color(name, c, true)
-      debug { "  #{nested_indent(payload)}#{name}#{" #{truncated_payload(payload)}" unless payload.empty?}" }
+      debug { "  #{nested_indent(payload)}#{name}#{" #{payload[:args][1]}" unless payload.empty?}" }
     end
 
-    %w(request encode decode collect).each do |operation|
+    %w(request encode decode).each do |operation|
       class_eval <<-METHOD, __FILE__, __LINE__ + 1
         def #{operation}(event)
           event.payload[:name] = '#{operation}'
@@ -88,12 +90,14 @@ module TwitterFriendly
     include Logging
 
     def cache_any(event)
-      payload = event.payload
-      operation = payload[:super_operation] == :fetch ? :fetch : payload[:name]
-      hit = %i(read fetch).include?(operation.to_sym) && payload[:hit]
-      name = "  AS::#{operation.capitalize}#{' (Hit)' if hit} #{payload[:key].split(':')[1]} (#{event.duration.round(1)}ms)"
-      name = color(name, MAGENTA, true)
-      debug { "#{nested_indent(payload)}#{name} #{(payload.except(:name, :expires_in, :super_operation, :hit, :race_condition_ttl, :tf_super_operation).inspect)}" }
+      debug do
+        payload = event.payload
+        operation = payload[:super_operation] == :fetch ? :fetch : payload[:name]
+        hit = %i(read fetch).include?(operation.to_sym) && payload[:hit] ? ' (Hit)' : ''
+        name = "  AS::#{operation.capitalize}#{hit} #{payload[:key].split(':')[1]} (#{event.duration.round(1)}ms)"
+        name = color(name, MAGENTA, true)
+        "#{nested_indent(payload)}#{name} #{(payload.except(:name, :expires_in, :super_operation, :hit, :race_condition_ttl, :tf_super_operation).inspect)}"
+      end
     end
 
     # Ignore generate and fetch_hit

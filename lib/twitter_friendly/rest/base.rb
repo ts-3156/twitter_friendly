@@ -19,12 +19,15 @@ module TwitterFriendly
         end
       end
 
-      def fetch_resources_with_cursor(name, args)
-        options = args.extract_options!
-
-        collect_with_cursor(args[0], [], -1, {super_operation: name}.merge(options)) do |next_cursor|
+      # @param method_name [Symbol]
+      # @param user [Integer, String, nil]
+      #
+      # @option options [Integer] :count
+      # @option options [String] :super_super_operation
+      def fetch_resources_with_cursor(method_name, user, options)
+        collect_with_cursor(user, [], -1, {super_operation: method_name}.merge(options)) do |next_cursor|
           options[:cursor] = next_cursor unless next_cursor.nil?
-          @twitter.send(name, *args, options)
+          @twitter.send(method_name, user, options)
         end
       end
     end

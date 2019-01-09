@@ -21,10 +21,16 @@ module TwitterFriendly
         tweets.empty? ? collection.flatten : collect_with_max_id(user, collection, tweets.last[:id] - 1, options, &block)
       end
 
+      # @param user [Integer, String, nil]
+      # @param collection [Array]
+      # @param cursor [Integer]
+      #
+      # @option options [Integer] :count
+      # @option options [String] :super_operation
+      # @option options [String] :super_super_operation
       def collect_with_cursor(user, collection, cursor, options, &block)
         fetch_options = options.dup
-        fetch_options[:cursor] = cursor
-        fetch_options.merge!(args: [__method__, fetch_options], hash: credentials_hash)
+        fetch_options.merge!(args: [__method__, fetch_options], hash: credentials_hash, cursor: cursor)
 
         # TODO Handle {cache: false} option
         response =

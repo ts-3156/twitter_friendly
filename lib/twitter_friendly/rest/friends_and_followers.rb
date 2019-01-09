@@ -7,15 +7,25 @@ module TwitterFriendly
 
       MAX_IDS_PER_REQUEST = 5000
 
+      # @return [Hash]
+      #
+      # @overload friend_ids(options = {})
+      #   Returns an array of numeric IDs for every user the authenticated user is following
+      #   @param options [Hash] A customizable set of options.
+      #
+      # @overload friend_ids(user, options = {})
+      #   Returns an array of numeric IDs for every user the specified user is following
+      #   @param user [Integer, String] A Twitter user ID or screen name.
+      #   @param options [Hash] A customizable set of options.
+      #
+      # @option options [Integer] :count The number of tweets to return per page, up to a maximum of 5000.
       %i(friend_ids follower_ids).each do |name|
         define_method(name) do |*args|
           options = {count: MAX_IDS_PER_REQUEST}.merge(args.extract_options!)
           if options[:super_operation]
-            options[:super_super_operation] = options[:super_operation]
-            options[:super_operation] = name
+            options[:super_super_operation] = options.delete(:super_operation)
           end
-          args << options
-          fetch_resources_with_cursor(name, args)
+          fetch_resources_with_cursor(name, args[0], options)
         end
       end
 

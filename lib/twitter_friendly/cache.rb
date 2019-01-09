@@ -14,6 +14,16 @@ module TwitterFriendly
       @client = ::ActiveSupport::Cache::FileStore.new(path, options)
     end
 
+    # @param method [Symbol]
+    # @param user [Integer, String, nil]
+    #
+    # @option options [Array] :args
+    # @option options [Integer] :count
+    # @option options [Integer] :cursor
+    # @option options [String] :hash
+    # @option options [String] :super_operation
+    # @option options [String] :super_super_operation
+    # @option options [Bool] :recursive
     def fetch(method, user, options = {}, &block)
       key = CacheKey.gen(method, user, options.except(:args))
       super_operation = options[:args].length >= 2 && options[:args][1][:super_operation]

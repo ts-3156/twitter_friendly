@@ -12,6 +12,10 @@ module TwitterFriendly
 
     def initialize(*args)
       options = args.extract_options!
+      @twitter = Twitter::REST::Client.new(options.slice(:access_token, :access_token_secret, :consumer_key, :consumer_secret))
+
+      options.except!(:access_token, :access_token_secret, :consumer_key, :consumer_secret)
+      @cache = TwitterFriendly::Cache.new(options)
 
       @logger = TwitterFriendly::Logger.new(options)
 
@@ -23,9 +27,6 @@ module TwitterFriendly
           TwitterFriendly::ASLogSubscriber.attach_to :active_support
         end
       end
-
-      @cache = TwitterFriendly::Cache.new(options)
-      @twitter = Twitter::REST::Client.new(options)
     end
 
     def cache
