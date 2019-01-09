@@ -10,8 +10,6 @@ require 'twitter_friendly/rest/favorites'
 require 'twitter_friendly/rest/lists'
 require 'twitter_friendly/rest/tweets'
 
-require 'twitter_friendly/caching'
-
 module TwitterFriendly
   module REST
     module API
@@ -27,7 +25,6 @@ module TwitterFriendly
       include TwitterFriendly::REST::Lists
       include TwitterFriendly::REST::Tweets
 
-      include TwitterFriendly::Caching
       include TwitterFriendly::REST::Collector::Caching
       include TwitterFriendly::REST::Users::Caching
     end

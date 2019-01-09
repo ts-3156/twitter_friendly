@@ -4,6 +4,7 @@ module TwitterFriendly
       def friendship?(from, to, options = {})
         @twitter.send(__method__, from, to, options)
       end
+      TwitterFriendly::Caching.caching :friendship?
 
       MAX_IDS_PER_REQUEST = 5000
 
@@ -15,13 +16,19 @@ module TwitterFriendly
       # @param user [Integer, String] A Twitter user ID or screen name.
       #
       # @option options [Integer] :count The number of tweets to return per page, up to a maximum of 5000.
-      %i(friend_ids follower_ids).each do |name|
-        define_method(name) do |*args|
-          options = {count: MAX_IDS_PER_REQUEST}.merge(args.extract_options!)
-          push_operations(options, name)
-          fetch_resources_with_cursor(name, args[0], options)
-        end
+      def friend_ids(*args)
+        options = {count: MAX_IDS_PER_REQUEST}.merge(args.extract_options!)
+        push_operations(options, __method__)
+        fetch_resources_with_cursor(__method__, args[0], options)
       end
+      TwitterFriendly::Caching.logging :friend_ids
+
+      def follower_ids(*args)
+        options = {count: MAX_IDS_PER_REQUEST}.merge(args.extract_options!)
+        push_operations(options, __method__)
+        fetch_resources_with_cursor(__method__, args[0], options)
+      end
+      TwitterFriendly::Caching.logging :follower_ids
 
       # @return [Hash]
       #
@@ -37,6 +44,7 @@ module TwitterFriendly
         ids = friend_ids(*args, options.except(:parallel))
         users(ids, options)
       end
+      TwitterFriendly::Caching.logging :friends
 
       def followers(*args)
         options = {parallel: true}.merge(args.extract_options!)
@@ -44,6 +52,7 @@ module TwitterFriendly
         ids = follower_ids(*args, options.except(:parallel))
         users(ids, options)
       end
+      TwitterFriendly::Caching.logging :followers
 
       def friend_ids_and_follower_ids(*args)
         options = { parallel: true}.merge(args.extract_options!)
@@ -60,6 +69,7 @@ module TwitterFriendly
           [friend_ids(*args, options), follower_ids(*args, options)]
         end
       end
+      TwitterFriendly::Caching.logging :friend_ids_and_follower_ids
 
       def friends_and_followers(*args)
         options = args.extract_options!.merge(super_operation: :friends_and_followers)
@@ -74,6 +84,7 @@ module TwitterFriendly
         #   batch.followers(*args, options)
         # end
       end
+      TwitterFriendly::Caching.logging :friend_ids_and_follower_ids
     end
   end
 end

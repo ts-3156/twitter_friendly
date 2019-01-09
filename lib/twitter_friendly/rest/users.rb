@@ -2,16 +2,19 @@ module TwitterFriendly
   module REST
     module Users
       def verify_credentials(options = {})
-        @twitter.send(__method__, {skip_status: true}.merge(options))&.to_hash
+        @twitter.verify_credentials({skip_status: true}.merge(options))&.to_hash
       end
+      TwitterFriendly::Caching.caching :verify_credentials
 
       def user?(*args)
-        @twitter.send(__method__, *args)
+        @twitter.user?(*args)
       end
+      TwitterFriendly::Caching.caching :user?
 
       def user(*args)
-        @twitter.send(__method__, *args)&.to_hash
+        @twitter.user(*args)&.to_hash
       end
+      TwitterFriendly::Caching.caching :user
 
       MAX_USERS_PER_REQUEST = 100
 
@@ -31,8 +34,9 @@ module TwitterFriendly
       end
 
       def blocked_ids(*args)
-        @twitter.send(__method__, *args)&.attrs&.fetch(:ids)
+        @twitter.blocked_ids(*args)&.attrs&.fetch(:ids)
       end
+      TwitterFriendly::Caching.caching :blocked_ids
 
       module Instrumenter
 

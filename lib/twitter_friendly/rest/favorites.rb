@@ -4,13 +4,12 @@ module TwitterFriendly
 
       MAX_TWEETS_PER_REQUEST = 100
 
-      %i(favorites).each do |name|
-        define_method(name) do |*args|
-          options = {result_type: :recent}.merge(args.extract_options!)
-          push_operations(options, name)
-          fetch_tweets_with_max_id(name, MAX_TWEETS_PER_REQUEST, args[0], options)
-        end
+      def favorites(*args)
+        options = {result_type: :recent}.merge(args.extract_options!)
+        push_operations(options, __method__)
+        fetch_tweets_with_max_id(__method__, MAX_TWEETS_PER_REQUEST, args[0], options)
       end
+      TwitterFriendly::Caching.logging :favorites
     end
   end
 end

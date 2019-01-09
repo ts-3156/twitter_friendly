@@ -1,5 +1,6 @@
 require 'forwardable'
 
+require 'twitter_friendly/caching'
 require 'twitter_friendly/rest/api'
 
 module TwitterFriendly

@@ -17,6 +17,7 @@ module TwitterFriendly
         push_operations(options, __method__)
         fetch_resources_with_cursor(__method__, args[0], options)
       end
+      TwitterFriendly::Caching.logging :memberships
 
       MAX_MEMBERS_PER_REQUEST = 5000
 
@@ -33,6 +34,7 @@ module TwitterFriendly
         push_operations(options, __method__)
         fetch_resources_with_cursor(__method__, args[0], options)
       end
+      TwitterFriendly::Caching.logging :list_members
     end
   end
 end

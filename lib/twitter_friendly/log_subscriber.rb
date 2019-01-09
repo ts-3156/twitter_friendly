@@ -14,10 +14,11 @@ module TwitterFriendly
       {args: args}.merge(payload.except(:args)).inspect
     end
 
+    INDENT = '  '
+
     def indentation(payload)
-      (payload[:super_operation] ? '  ' : '') +
-          (payload[:super_super_operation] ? '  ' : '') +
-          (payload[:name] == 'write' ? '  ' : '')
+      sp = payload[:super_operation]&.is_a?(Array) ? (INDENT * payload[:super_operation].size) : ''
+      sp + (payload[:name] == 'write' ? INDENT : '')
     end
 
     module_function
@@ -40,7 +41,7 @@ module TwitterFriendly
         name = "#{indentation(payload)}TF::Started #{payload[:operation]}"
 
         if payload[:super_operation]
-          "#{name} in #{payload[:super_operation]} at #{Time.now}"
+          "#{name} in #{payload[:super_operation][0]} at #{Time.now}"
         else
           "#{name} at #{Time.now}"
         end
@@ -61,7 +62,7 @@ module TwitterFriendly
         payload = event.payload
         payload.delete(:name)
         operation = payload.delete(:operation)
-        name = "  TW::#{operation.capitalize} #{payload[:args].last[:super_operation]} in #{payload[:args][0]} (#{event.duration.round(1)}ms)"
+        name = "  TW::#{operation.capitalize} #{payload[:args].last[:super_operation][0]} in #{payload[:args][0]} (#{event.duration.round(1)}ms)"
         name = color(name, BLUE, true)
         "  #{indentation(payload)}#{name}#{" #{payload[:args][1]}" unless payload.empty?}"
       end

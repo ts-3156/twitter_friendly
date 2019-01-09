@@ -1,12 +1,11 @@
 module TwitterFriendly
   module Caching
-    %i(
-      verify_credentials
-      user?
-      user
-      blocked_ids
-      friendship?
-    ).each do |name|
+
+    module_function
+
+    # TODO 1つのメソッドに対して1回しか実行されないようにする
+    # 全体をキャッシュさせ、さらにロギングを行う
+    def caching(name)
       define_method(name) do |*args|
         options = args.extract_options!
         Instrumenter.start_processing(name, options)
@@ -26,24 +25,8 @@ module TwitterFriendly
       end
     end
 
-    # これらのメソッドは、内部で呼ぶメソッドをキャッシュするため、
-    # 全体をキャッシュすることはない。
-    %i(
-      friend_ids
-      follower_ids
-      friends
-      followers
-      friend_ids_and_follower_ids
-      friends_and_followers
-      search
-      favorites
-      home_timeline
-      user_timeline
-      mentions_timeline
-      memberships
-      list_members
-      retweeters_ids
-    ).each do |name|
+    # 全体をキャッシュせずにロギングだけを行う
+    def logging(name)
       define_method(name) do |*args|
         options = args.extract_options!
         Instrumenter.start_processing(name, options)
