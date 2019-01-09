@@ -1,20 +1,23 @@
 module TwitterFriendly
   module REST
     module Collector
-      def collect_with_max_id(user, collection, max_id, options, &block)
-        key = CacheKey.gen(name, user, options.merge(max_id: max_id, hash: credentials_hash))
+      def collect_with_max_id(user, collection, max_id, options, collect_options, &block)
+        key = CacheKey.gen(__method__, user, options.merge(max_id: max_id, hash: credentials_hash, super_operation: collect_options[:super_operation]))
 
-        # TODO Handle {cache: false} option
+          # TODO Handle {cache: false} option
         tweets =
             @cache.fetch(key, args: [__method__, options]) do
               Instrumenter.perform_request(__method__, options) {yield(max_id)}
             end
         return collection if tweets.nil?
 
-        options[:recursive] = true
-
         collection.concat tweets
-        tweets.empty? ? collection.flatten : collect_with_max_id(user, collection, tweets.last[:id] - 1, options, &block)
+        if tweets.empty? || (collect_options[:call_count] -= 1) < 1
+          collection.flatten
+        else
+          options[:recursive] = true
+          collect_with_max_id(user, collection, tweets.last[:id] - 1, options, collect_options, &block)
+        end
       end
 
       # @param user [Integer, String, nil]

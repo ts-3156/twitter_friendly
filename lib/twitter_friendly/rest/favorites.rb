@@ -6,8 +6,9 @@ module TwitterFriendly
 
       %i(favorites).each do |name|
         define_method(name) do |*args|
-          args << {result_type: :recent}.merge(args.extract_options!)
-          fetch_tweets_with_max_id(name, args, MAX_TWEETS_PER_REQUEST)
+          options = {result_type: :recent}.merge(args.extract_options!)
+          push_operations(options, name)
+          fetch_tweets_with_max_id(name, MAX_TWEETS_PER_REQUEST, args[0], options)
         end
       end
     end

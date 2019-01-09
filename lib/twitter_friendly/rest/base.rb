@@ -1,21 +1,18 @@
 module TwitterFriendly
   module REST
     module Base
-      def fetch_tweets_with_max_id(name, args, max_count)
-        options = args.extract_options!
+      def fetch_tweets_with_max_id(method_name, max_count, user, options)
         total_count = options.delete(:count) || max_count
         call_count = total_count / max_count + (total_count % max_count == 0 ? 0 : 1)
-        options[:count] = max_count
+        options[:count] = [max_count, total_count].min
+        super_operation = options.delete(:super_operation)
+        collect_options = {call_count: call_count, total_count: total_count, super_operation: super_operation}
 
-        collect_with_max_id(args[0], [], nil, {super_operation: name}.merge(options)) do |max_id|
+        collect_with_max_id(user, [], nil, options, collect_options) do |max_id|
           options[:max_id] = max_id unless max_id.nil?
-          if (call_count -= 1) >= 0
-            if name == :search
-              @twitter.send(name, *args, options).attrs[:statuses]
-            else
-              @twitter.send(name, *args, options).map(&:attrs)
-            end
-          end
+
+          result = @twitter.send(method_name, *[user, options].compact)
+          (method_name == :search) ? result.attrs[:statuses] : result.map(&:attrs)
         end
       end
 
