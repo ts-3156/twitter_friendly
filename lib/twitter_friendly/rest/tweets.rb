@@ -14,6 +14,7 @@ module TwitterFriendly
       def retweeters_ids(*args)
         # このメソッドではページングができない
         options = {count: MAX_IDS_PER_REQUEST}.merge(args.extract_options!)
+        push_operations(options, __method__)
         fetch_resources_with_cursor(__method__, args[0], options)
       end
     end

@@ -17,12 +17,11 @@ module TwitterFriendly
 
       def users(values, options = {})
         if values.size <= MAX_USERS_PER_REQUEST
-          fetch_options = options.dup
-          fetch_options.merge!(args: [__method__, options], hash: credentials_hash)
+          key = CacheKey.gen(__method__, values, options.merge(hash: credentials_hash))
 
-          @cache.fetch(__method__, values, fetch_options) do
+          @cache.fetch(key, args: [__method__, options]) do
             Instrumenter.perform_request(args: [__method__, super_operation: options[:super_operation]]) do
-              @twitter.send(__method__, values, options)&.compact&.map(&:to_hash)
+              @twitter.send(__method__, values, options.except(:parallel, :super_operation, :recursive))&.compact&.map(&:to_hash)
             end
           end
         else

@@ -19,7 +19,8 @@ module TwitterFriendly
             do_request.call
           else
             user = (name == :friendship?) ? args[0, 2] : args[0]
-            @cache.fetch(name, user, options.merge(args: [name, options], hash: credentials_hash), &do_request)
+            key = CacheKey.gen(name, user, options.merge(hash: credentials_hash))
+            @cache.fetch(key, args: [name, options], &do_request)
           end
         end
       end

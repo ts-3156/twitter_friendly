@@ -18,9 +18,7 @@ module TwitterFriendly
       %i(friend_ids follower_ids).each do |name|
         define_method(name) do |*args|
           options = {count: MAX_IDS_PER_REQUEST}.merge(args.extract_options!)
-          if options[:super_operation]
-            options[:super_super_operation] = options.delete(:super_operation)
-          end
+          push_operations(options, name)
           fetch_resources_with_cursor(name, args[0], options)
         end
       end
@@ -34,27 +32,29 @@ module TwitterFriendly
       #
       # @option options [Bool] :parallel
       def friends(*args)
-        options = {super_operation: :friends, parallel: true}.merge(args.extract_options!)
+        options = {parallel: true}.merge(args.extract_options!)
+        push_operations(options, __method__)
         ids = friend_ids(*args, options.except(:parallel))
         users(ids, options)
       end
 
       def followers(*args)
-        options = {super_operation: :followers, parallel: true}.merge(args.extract_options!)
+        options = {parallel: true}.merge(args.extract_options!)
+        push_operations(options, __method__)
         ids = follower_ids(*args, options.except(:parallel))
         users(ids, options)
       end
 
       def friend_ids_and_follower_ids(*args)
-        options = {super_operation: :friend_ids_and_follower_ids, parallel: true}.merge(args.extract_options!)
+        options = { parallel: true}.merge(args.extract_options!)
         is_parallel = options.delete(:parallel)
 
         if is_parallel
           require 'parallel'
 
           parallel(in_threads: 2) do |batch|
-            batch.friend_ids(*args, options)
-            batch.follower_ids(*args, options)
+            batch.friend_ids(*args, options.merge(super_operation: [__method__]))
+            batch.follower_ids(*args, options.merge(super_operation: [__method__]))
           end
         else
           [friend_ids(*args, options), follower_ids(*args, options)]

@@ -25,9 +25,9 @@ module TwitterFriendly
       # @option options [Integer] :count
       # @option options [String] :super_super_operation
       def fetch_resources_with_cursor(method_name, user, options)
-        collect_with_cursor(user, [], -1, {super_operation: method_name}.merge(options)) do |next_cursor|
+        collect_with_cursor(user, [], -1, options) do |next_cursor|
           options[:cursor] = next_cursor unless next_cursor.nil?
-          @twitter.send(method_name, user, options)
+          @twitter.send(method_name, user, options.except(:super_operation))
         end
       end
     end

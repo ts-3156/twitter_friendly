@@ -14,39 +14,32 @@ module TwitterFriendly
       @client = ::ActiveSupport::Cache::FileStore.new(path, options)
     end
 
-    # @param method [Symbol]
-    # @param user [Integer, String, nil]
+    # @param key [String]
     #
-    # @option options [Array] :args
-    # @option options [Integer] :count
-    # @option options [Integer] :cursor
-    # @option options [String] :hash
-    # @option options [String] :super_operation
-    # @option options [String] :super_super_operation
-    # @option options [Bool] :recursive
-    def fetch(method, user, options = {}, &block)
-      key = CacheKey.gen(method, user, options.except(:args))
-
+    # @option serialize_options [Array] :args
+    def fetch(key, serialize_options, &block)
       block_result = nil
-      blk =
+      yield_and_encode =
           Proc.new do
             block_result = yield
-            encode(block_result, options[:args])
+            encode(block_result, serialize_options)
           end
 
-      fetch_result = @client.fetch(key, &blk)
+      fetch_result = @client.fetch(key, &yield_and_encode)
 
-      block_result ? block_result : decode(fetch_result, options[:args])
+      block_result || decode(fetch_result, serialize_options)
     end
 
     private
 
-    def encode(obj, args)
-      Serializer.encode(obj, args: args)
+    # @option options [Array] :args
+    def encode(obj, options)
+      Serializer.encode(obj, options)
     end
 
-    def decode(str, args)
-      Serializer.decode(str, args: args)
+    # @option options [Array] :args
+    def decode(str, options)
+      Serializer.decode(str, options)
     end
   end
 end

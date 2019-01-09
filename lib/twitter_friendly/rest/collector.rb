@@ -2,16 +2,12 @@ module TwitterFriendly
   module REST
     module Collector
       def collect_with_max_id(user, collection, max_id, options, &block)
-        fetch_options = options.dup
-        fetch_options[:max_id] = max_id
-        fetch_options.merge!(args: [__method__, fetch_options], hash: credentials_hash)
+        key = CacheKey.gen(name, user, options.merge(max_id: max_id, hash: credentials_hash))
 
         # TODO Handle {cache: false} option
         tweets =
-            @cache.fetch(__method__, user, fetch_options) do
-              Instrumenter.perform_request(args: [__method__, max_id: max_id, super_operation: options[:super_operation]]) do
-                yield(max_id)
-              end
+            @cache.fetch(key, args: [__method__, options]) do
+              Instrumenter.perform_request(__method__, options) {yield(max_id)}
             end
         return collection if tweets.nil?
 
@@ -29,16 +25,12 @@ module TwitterFriendly
       # @option options [String] :super_operation
       # @option options [String] :super_super_operation
       def collect_with_cursor(user, collection, cursor, options, &block)
-        fetch_options = options.dup
-        fetch_options.merge!(args: [__method__, options], hash: credentials_hash)
-        fetch_options.merge!(cursor: cursor)
+        key = CacheKey.gen(__method__, user, options.merge(cursor: cursor, hash: credentials_hash))
 
         # TODO Handle {cache: false} option
         response =
-            @cache.fetch(__method__, user, fetch_options) do
-              Instrumenter.perform_request(args: [__method__, cursor: cursor, super_operation: options[:super_operation]]) do
-                yield(cursor).attrs
-              end
+            @cache.fetch(key, args: [__method__, options]) do
+              Instrumenter.perform_request(__method__, options) {yield(cursor).attrs}
             end
         return collection if response.nil?
 
@@ -56,8 +48,8 @@ module TwitterFriendly
         # 他のメソッドと違い再帰的に呼ばれるため、全体をキャッシュすると、すべてを再帰的にキャッシュしてしまう。
         # それを防ぐために、特別にここでキャッシュの処理を登録している。
 
-        def perform_request(options, &block)
-          payload = {operation: 'collect', args: options[:args]}
+        def perform_request(method_name, options, &block)
+          payload = {operation: 'collect', args: [method_name, options.slice(:max_id, :cursor, :super_operation)]}
           ::ActiveSupport::Notifications.instrument('collect.twitter_friendly', payload) { yield(payload) }
         end
       end

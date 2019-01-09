@@ -37,7 +37,7 @@ module TwitterFriendly
     def start_processing(event)
       debug do
         payload = event.payload
-        name = "#{indentation(payload)}TF::Started #{payload.delete(:operation)}"
+        name = "#{indentation(payload)}TF::Started #{payload[:operation]}"
 
         if payload[:super_operation]
           "#{name} in #{payload[:super_operation]} at #{Time.now}"
@@ -50,7 +50,7 @@ module TwitterFriendly
     def complete_processing(event)
       debug do
         payload = event.payload
-        name = "TF::Completed #{payload.delete(:operation)} in #{event.duration.round(1)}ms"
+        name = "TF::Completed #{payload[:operation]} in #{event.duration.round(1)}ms"
 
         "#{indentation(payload)}#{name}#{" #{truncated_payload(payload)}" unless payload.empty?}"
       end
