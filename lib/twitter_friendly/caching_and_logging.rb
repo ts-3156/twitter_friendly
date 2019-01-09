@@ -1,38 +1,42 @@
 module TwitterFriendly
-  module Caching
+  module CachingAndLogging
 
     module_function
 
     # TODO 1つのメソッドに対して1回しか実行されないようにする
     # 全体をキャッシュさせ、さらにロギングを行う
-    def caching(name)
-      define_method(name) do |*args|
-        options = args.extract_options!
-        Instrumenter.start_processing(name, options)
+    def caching(*root_args)
+      root_args.each do |method_name|
+        define_method(method_name) do |*args|
+          options = args.extract_options!
+          Instrumenter.start_processing(method_name, options)
 
-        Instrumenter.complete_processing(name, options) do
-          do_request =
-              Proc.new {Instrumenter.perform_request(name, options) {options.empty? ? super(*args) : super(*args, options)}}
+          Instrumenter.complete_processing(method_name, options) do
+            do_request =
+                Proc.new {Instrumenter.perform_request(method_name, options) {options.empty? ? super(*args) : super(*args, options)}}
 
-          if Utils.cache_disabled?(options)
-            do_request.call
-          else
-            user = (name == :friendship?) ? args[0, 2] : args[0]
-            key = CacheKey.gen(name, user, options.merge(hash: credentials_hash))
-            @cache.fetch(key, args: [name, options], &do_request)
+            if Utils.cache_disabled?(options)
+              do_request.call
+            else
+              user = (method_name == :friendship?) ? args[0, 2] : args[0]
+              key = CacheKey.gen(method_name, user, options.merge(hash: credentials_hash))
+              @cache.fetch(key, args: [method_name, options], &do_request)
+            end
           end
         end
       end
     end
 
     # 全体をキャッシュせずにロギングだけを行う
-    def logging(name)
-      define_method(name) do |*args|
-        options = args.extract_options!
-        Instrumenter.start_processing(name, options)
+    def logging(*root_args)
+      root_args.each do |method_name|
+        define_method(method_name) do |*args|
+          options = args.extract_options!
+          Instrumenter.start_processing(method_name, options)
 
-        Instrumenter.complete_processing(name, options) do
-          options.empty? ? super(*args) : super(*args, options)
+          Instrumenter.complete_processing(method_name, options) do
+            options.empty? ? super(*args) : super(*args, options)
+          end
         end
       end
     end

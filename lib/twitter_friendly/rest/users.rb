@@ -4,17 +4,14 @@ module TwitterFriendly
       def verify_credentials(options = {})
         @twitter.verify_credentials({skip_status: true}.merge(options))&.to_hash
       end
-      TwitterFriendly::Caching.caching :verify_credentials
 
-      def user?(*args)
-        @twitter.user?(*args)
+      def user?(user, options = {})
+        @twitter.user?(user, options)
       end
-      TwitterFriendly::Caching.caching :user?
 
       def user(*args)
         @twitter.user(*args)&.to_hash
       end
-      TwitterFriendly::Caching.caching :user
 
       MAX_USERS_PER_REQUEST = 100
 
@@ -36,7 +33,6 @@ module TwitterFriendly
       def blocked_ids(*args)
         @twitter.blocked_ids(*args)&.attrs&.fetch(:ids)
       end
-      TwitterFriendly::Caching.caching :blocked_ids
 
       module Instrumenter
 

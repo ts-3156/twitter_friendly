@@ -17,7 +17,6 @@ module TwitterFriendly
         push_operations(options, __method__)
         fetch_resources_with_cursor(__method__, args[0], options)
       end
-      TwitterFriendly::Caching.logging :retweeters_ids
     end
   end
 end

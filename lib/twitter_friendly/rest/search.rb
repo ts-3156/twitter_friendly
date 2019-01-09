@@ -10,7 +10,6 @@ module TwitterFriendly
         push_operations(options, __method__)
         fetch_tweets_with_max_id(__method__, MAX_TWEETS_PER_REQUEST, query, options)
       end
-      TwitterFriendly::Caching.logging :search
     end
   end
 end
