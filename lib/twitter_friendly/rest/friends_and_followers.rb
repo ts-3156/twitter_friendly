@@ -10,13 +10,9 @@ module TwitterFriendly
       # @return [Hash]
       #
       # @overload friend_ids(options = {})
-      #   Returns an array of numeric IDs for every user the authenticated user is following
-      #   @param options [Hash] A customizable set of options.
-      #
       # @overload friend_ids(user, options = {})
-      #   Returns an array of numeric IDs for every user the specified user is following
-      #   @param user [Integer, String] A Twitter user ID or screen name.
-      #   @param options [Hash] A customizable set of options.
+      #
+      # @param user [Integer, String] A Twitter user ID or screen name.
       #
       # @option options [Integer] :count The number of tweets to return per page, up to a maximum of 5000.
       %i(friend_ids follower_ids).each do |name|

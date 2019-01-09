@@ -30,7 +30,8 @@ module TwitterFriendly
       # @option options [String] :super_super_operation
       def collect_with_cursor(user, collection, cursor, options, &block)
         fetch_options = options.dup
-        fetch_options.merge!(args: [__method__, fetch_options], hash: credentials_hash, cursor: cursor)
+        fetch_options.merge!(args: [__method__, options], hash: credentials_hash)
+        fetch_options.merge!(cursor: cursor)
 
         # TODO Handle {cache: false} option
         response =

@@ -14,8 +14,8 @@ module TwitterFriendly
       {args: args}.merge(payload.except(:args)).inspect
     end
 
-    def nested_indent(payload)
-      (payload[:super_operation] ? '  ' : '') + (payload[:super_super_operation] ? '  ' : '')
+    def indentation(payload)
+      (payload[:super_operation] ? '  ' : '') + (payload[:super_super_operation] ? '  ' : '') + (payload[:name] == 'write' ? '  ' : '')
     end
 
     module_function
@@ -33,9 +33,10 @@ module TwitterFriendly
     include Logging
 
     def start_processing(event)
-      payload = event.payload
-      name = "#{nested_indent(payload)}TF::Started #{payload.delete(:operation)}"
       debug do
+        payload = event.payload
+        name = "#{indentation(payload)}TF::Started #{payload.delete(:operation)}"
+
         if payload[:super_operation]
           "#{name} in #{payload[:super_operation]} at #{Time.now}"
         else
@@ -45,35 +46,35 @@ module TwitterFriendly
     end
 
     def complete_processing(event)
-      payload = event.payload
-      name = "TF::Completed #{payload.delete(:operation)} in #{event.duration.round(1)}ms"
       debug do
-        "#{nested_indent(payload)}#{name}#{" #{truncated_payload(payload)}" unless payload.empty?}"
+        payload = event.payload
+        name = "TF::Completed #{payload.delete(:operation)} in #{event.duration.round(1)}ms"
+
+        "#{indentation(payload)}#{name}#{" #{truncated_payload(payload)}" unless payload.empty?}"
       end
     end
 
     def collect(event)
-      payload = event.payload
-      payload.delete(:name)
-      operation = payload.delete(:operation)
-      name = "  TW::#{operation.capitalize} #{payload[:args].last[:super_operation]} in #{payload[:args][0]} (#{event.duration.round(1)}ms)"
-      name = color(name, BLUE, true)
-      debug { "  #{nested_indent(payload)}#{name}#{" #{payload[:args][1]}" unless payload.empty?}" }
+      debug do
+        payload = event.payload
+        payload.delete(:name)
+        operation = payload.delete(:operation)
+        name = "  TW::#{operation.capitalize} #{payload[:args].last[:super_operation]} in #{payload[:args][0]} (#{event.duration.round(1)}ms)"
+        name = color(name, BLUE, true)
+        "  #{indentation(payload)}#{name}#{" #{payload[:args][1]}" unless payload.empty?}"
+      end
     end
 
     def twitter_friendly_any(event)
-      payload = event.payload
-      payload.delete(:name)
-      operation = payload.delete(:operation)
-      name = "  TW::#{operation.capitalize} #{payload[:args][0]} (#{event.duration.round(1)}ms)"
-      c =
-          if %i(encode decode).include?(operation.to_sym)
-            YELLOW
-          else
-            CYAN
-          end
-      name = color(name, c, true)
-      debug { "  #{nested_indent(payload)}#{name}#{" #{payload[:args][1]}" unless payload.empty?}" }
+      debug do
+        payload = event.payload
+        payload.delete(:name)
+        operation = payload.delete(:operation)
+        name = "  TW::#{operation.capitalize} #{payload[:args][0]} (#{event.duration.round(1)}ms)"
+        c = (%i(encode decode).include?(operation.to_sym)) ? YELLOW : CYAN
+        name = color(name, c, true)
+        "  #{indentation(payload)}#{name}#{" #{payload[:args][1]}" unless payload.empty?}"
+      end
     end
 
     %w(request encode decode).each do |operation|
@@ -96,7 +97,7 @@ module TwitterFriendly
         hit = %i(read fetch).include?(operation.to_sym) && payload[:hit] ? ' (Hit)' : ''
         name = "  AS::#{operation.capitalize}#{hit} #{payload[:key].split(':')[1]} (#{event.duration.round(1)}ms)"
         name = color(name, MAGENTA, true)
-        "#{nested_indent(payload)}#{name} #{(payload.except(:name, :expires_in, :super_operation, :hit, :race_condition_ttl, :tf_super_operation).inspect)}"
+        "#{indentation(payload)}#{name} #{(payload.except(:name, :expires_in, :super_operation, :hit, :race_condition_ttl, :tf_super_operation).inspect)}"
       end
     end
 
