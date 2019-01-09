@@ -49,37 +49,32 @@ module TwitterFriendly
     end
 
     describe '#fetch' do
-      let(:options) { {something: false, args: {anything: true}} }
-      it do
-        expect(CacheKey).to receive(:gen).with(method_name, id, options.except(:args)).and_return('key')
-        instance.fetch(method_name, id, options) { 'result' }
-      end
+      let(:key) { 'key' }
+      let(:serialize_options) { {something: false, args: {anything: true}} }
 
       it 'calls internal fetch' do
-        allow(CacheKey).to receive(:gen).and_return('key')
-        expect(internal_client).to receive(:fetch).with('key')
-        instance.fetch(method_name, id, options) { 'result' }
+        expect(internal_client).to receive(:fetch).with(key)
+        instance.fetch(key, serialize_options) { 'result' }
       end
 
       context 'Key exists' do
         let(:fetch_result) { {a: 1}.to_json }
         before do
-          internal_client.write('key', fetch_result)
-          allow(CacheKey).to receive(:gen).and_return('key')
+          internal_client.write(key, fetch_result)
         end
 
         it do
-          expect(instance.fetch(method_name, id, options)).to eq({a: 1})
+          expect(instance.fetch(key, serialize_options)).to eq({a: 1})
         end
 
         it "doesn't call #encode" do
           expect(instance).to_not receive(:encode)
-          instance.fetch(method_name, id, options)
+          instance.fetch(key, serialize_options)
         end
 
         it 'calls #decode' do
-          expect(instance).to receive(:decode).with(fetch_result, args: options[:args]).and_return(JSON.parse(fetch_result, symbolize_names: true))
-          instance.fetch(method_name, id, options)
+          expect(instance).to receive(:decode).with(fetch_result, serialize_options).and_return(JSON.parse(fetch_result, symbolize_names: true))
+          instance.fetch(key, serialize_options)
         end
       end
 
@@ -88,17 +83,17 @@ module TwitterFriendly
         before { internal_client.clear }
 
         it do
-          expect(instance.fetch(method_name, id, options) { block_result }).to eq({b: 2})
+          expect(instance.fetch(key, serialize_options) { block_result }).to eq({b: 2})
         end
 
         it 'calls #encode' do
-          expect(instance).to receive(:encode).with(block_result, args: options[:args])
-          instance.fetch(method_name, id, options) { block_result }
+          expect(instance).to receive(:encode).with(block_result, serialize_options)
+          instance.fetch(key, serialize_options) { block_result }
         end
 
         it "doesn't call #decode" do
           expect(instance).to_not receive(:decode)
-          instance.fetch(method_name, id, options) { block_result }
+          instance.fetch(key, serialize_options) { block_result }
         end
       end
     end

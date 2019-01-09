@@ -5,11 +5,18 @@ module TwitterFriendly
         Class.new do
           include Parallel
           include Users
+
+          def credentials_hash
+            'credentials_hash'
+          end
         end
       end
 
       let(:instance) do
-        dummy_class.new.tap{|i| i.instance_variable_set(:@twitter, Twitter::REST::Client.new) }
+        dummy_class.new.tap do |i|
+          i.instance_variable_set(:@twitter, Twitter::REST::Client.new)
+          i.instance_variable_set(:@cache, TwitterFriendly::Cache.new)
+        end
       end
       let(:internal_client) { instance.instance_variable_get(:@twitter) }
       let(:id) { 58135830 }
@@ -32,7 +39,7 @@ module TwitterFriendly
 
       describe '#user?' do
         it do
-          expect(internal_client).to receive(:user?).with(id)
+          expect(internal_client).to receive(:user?).with(id, {})
           instance.user?(id)
         end
       end
@@ -56,7 +63,7 @@ module TwitterFriendly
         context 'ids.length > 100' do
           let(:ids) { Array.new(101) {id} }
           it do
-            expect(instance).to receive(:_users).with(ids, {})
+            expect(instance).to receive(:_users).with(ids, {recursive: true})
             instance.users(ids)
           end
         end
@@ -65,7 +72,7 @@ module TwitterFriendly
       describe '#_users' do
         let(:ids) { [id, id] }
         it do
-          expect(internal_client).to receive(:users).with(ids, {super_operation: :users, parallel: true})
+          expect(internal_client).to receive(:users).with(ids, {})
           instance.send(:_users, ids)
         end
       end

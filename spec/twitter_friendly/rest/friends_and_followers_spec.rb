@@ -5,6 +5,7 @@ module TwitterFriendly
         Class.new do
           include Collector
           include Base
+          include Utils
           include FriendsAndFollowers
         end
       end
@@ -35,7 +36,7 @@ module TwitterFriendly
         context 'ids <= 5000' do
           let(:ids) {[id] }
           it do
-            expect(instance).to receive(:collect_with_cursor)
+            expect(instance).to receive(:fetch_resources_with_cursor)
             instance.friend_ids(ids)
           end
         end
