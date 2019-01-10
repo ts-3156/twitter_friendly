@@ -3,7 +3,32 @@
 [![Gem Version](https://badge.fury.io/rb/twitter_friendly.png)](https://badge.fury.io/rb/twitter_friendly)
 [![Build Status](https://travis-ci.org/ts-3156/twitter_friendly.svg?branch=master)](https://travis-ci.org/ts-3156/twitter_friendly)
 
-A twitter-friendly Ruby interface to the Twitter API. This twitter_friendly gem provides multiple features.
+The twitter_friendly is a gem to crawl many friends/followers with minimal code. When you want to get a list of friends/followers for a user, all you need to write is the below.
+
+```
+require 'twitter_friendly'
+
+client =
+    TwitterFriendly::Client.new(
+        consumer_key: 'CONSUMER_KEY',
+        consumer_secret: 'CONSUMER_SECRET',
+        access_token: 'ACCESS_TOKEN',
+        access_token_secret: 'ACCESS_TOKEN_SECRET',
+        expires_in: 86400 # 1day
+    )
+
+ids = []
+
+begin
+  ids = client.follower_ids('yousuck2020')
+rescue Twitter::Error::TooManyRequests => e
+  sleep client.rate_limit.follower_ids[:reset_in]
+  retry
+end
+
+puts "ids #{ids.size}"
+File.write('ids.txt', ids.join("\n"))
+```
 
 - Auto pagination
 - Auto caching
@@ -156,30 +181,16 @@ client.followers
 Fetch the timeline of Tweets (by screen name or user ID, or by implicit authenticated user)
 
 ```ruby
-client.user_timeline('gem')
-client.user_timeline(213747670)
-client.user_timeline
+tweets = client.user_timeline('screen_name')
 
-result.size
+tweets.size
 # => 588
 
-result.first.text
+tweets[0][:text]
 # => "Your tweet text..."
 
-result.first.user.screen_name
-# => "your_screen_name"
-```
-
-Fetch the timeline of Tweets from the authenticated user's home page
-
-```ruby
-client.home_timeline
-```
-
-Fetch the timeline of Tweets mentioning the authenticated user
-
-```ruby
-client.mentions_timeline
+tweets[0][:user][:screen_name]
+# => "screen_name"
 ```
 
 ## Contributing
