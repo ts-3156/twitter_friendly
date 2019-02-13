@@ -49,6 +49,11 @@ module TwitterFriendly
       @twitter
     end
 
+    def twitter
+      logger.warn "DEPRECATION WARNING: Use #internal_client instead of #twitter"
+      internal_client
+    end
+
     def subscriber_attached?
       @@subscriber_attached ||= false
     end

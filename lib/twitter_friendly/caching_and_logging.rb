@@ -18,7 +18,7 @@ module TwitterFriendly
             if Utils.cache_disabled?(options)
               do_request.call
             else
-              user = (method_name == :friendship?) ? args[0, 2] : args[0]
+              user = method_name == :friendship? ? args[0, 2] : args[0]
               key = CacheKey.gen(method_name, user, options.merge(hash: credentials_hash))
               @cache.fetch(key, args: [method_name, options], &do_request)
             end

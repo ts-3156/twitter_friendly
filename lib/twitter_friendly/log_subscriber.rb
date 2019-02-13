@@ -27,6 +27,7 @@ module TwitterFriendly
       @@logger
     end
 
+    # Because TwitterFriendly::Logging is not inherited, passing an instance of logger via module function.
     def logger=(logger)
       @@logger = logger
     end
