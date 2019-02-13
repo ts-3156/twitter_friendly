@@ -6,11 +6,14 @@ module TwitterFriendly
     VERSION = '1'
 
     class << self
-      def gen(method, user, options = {})
+      def gen(method_name, args, cache_options = {})
+        options = args.dup.extract_options!
+        user = method_name == :friendship? ? args[0, 2] : args[0]
+
         [version,
-         method,
-         method_identifier(method, user, options),
-         options_identifier(method, options)
+         method_name,
+         method_identifier(method_name, user, options, cache_options),
+         options_identifier(method_name, options)
         ].compact.join(DELIM)
       end
 
@@ -20,14 +23,14 @@ module TwitterFriendly
         'v' + VERSION
       end
 
-      def method_identifier(method, user, options)
+      def method_identifier(method, user, options, cache_options)
           case
-          when method == :search                    then "query#{DELIM}#{user}"
-          when method == :friendship?               then "from#{DELIM}#{user[0]}#{DELIM}to#{DELIM}#{user[1]}"
-          when method == :list_members              then "list_id#{DELIM}#{user}"
-          when method == :collect_with_max_id       then method_identifier(extract_super_operation(options), user, options)
-          when method == :collect_with_cursor       then method_identifier(extract_super_operation(options), user, options)
-          when user.nil? && options[:hash].present? then "token-hash#{DELIM}#{options[:hash]}"
+          when method == :search                 then "query#{DELIM}#{user}"
+          when method == :friendship?            then "from#{DELIM}#{user[0]}#{DELIM}to#{DELIM}#{user[1]}"
+          when method == :list_members           then "list_id#{DELIM}#{user}"
+          when method == :collect_with_max_id    then method_identifier(extract_super_operation(options), user, options, cache_options)
+          when method == :collect_with_cursor    then method_identifier(extract_super_operation(options), user, options, cache_options)
+          when user.nil? && cache_options[:hash] then "token-hash#{DELIM}#{options[:hash]}"
           else user_identifier(user)
           end
       end
@@ -47,11 +50,12 @@ module TwitterFriendly
         # TODO 内部的な値はすべてprefix _tf_ をつける
         opt = options.except(:hash, :call_count, :call_limit, :super_operation, :super_super_operation, :recursive, :parallel)
         opt[:in] = extract_super_operation(options) if %i(collect_with_max_id collect_with_cursor).include?(method)
+        delim = '_'
 
         if opt.empty?
           nil
         else
-          str = opt.map {|k, v| "#{k}_#{v}"}.join('_')
+          str = opt.map {|k, v| "#{k}#{delim}#{v}"}.join(delim)
           "options#{DELIM}#{str}"
         end
       end

@@ -2,7 +2,7 @@ module TwitterFriendly
   module REST
     module Collector
       def collect_with_max_id(user, collection, max_id, options, collect_options, &block)
-        key = CacheKey.gen(__method__, user, options.merge(max_id: max_id, hash: credentials_hash, super_operation: collect_options[:super_operation]))
+        key = CacheKey.gen(__method__, [user, options.merge(max_id: max_id, super_operation: collect_options[:super_operation])], hash: credentials_hash)
 
           # TODO Handle {cache: false} option
         tweets =
@@ -28,7 +28,7 @@ module TwitterFriendly
       # @option options [String] :super_operation
       # @option options [String] :super_super_operation
       def collect_with_cursor(user, collection, cursor, options, &block)
-        key = CacheKey.gen(__method__, user, options.merge(cursor: cursor, hash: credentials_hash))
+        key = CacheKey.gen(__method__, [user, options.merge(cursor: cursor)], hash: credentials_hash)
 
         # TODO Handle {cache: false} option
         response =

@@ -5,22 +5,19 @@ module TwitterFriendly
 
     # TODO 1つのメソッドに対して1回しか実行されないようにする
     # 全体をキャッシュさせ、さらにロギングを行う
-    def caching(*root_args)
-      root_args.each do |method_name|
+    def caching(*method_names)
+      method_names.each do |method_name|
+        alias_method "orig_#{method_name}", method_name
+
         define_method(method_name) do |*args|
-          options = args.extract_options!
+          options = args.dup.extract_options!
           Instrumenter.start_processing(method_name, options)
 
           Instrumenter.complete_processing(method_name, options) do
-            do_request =
-                Proc.new {Instrumenter.perform_request(method_name, options) {options.empty? ? super(*args) : super(*args, options)}}
 
-            if Utils.cache_disabled?(options)
-              do_request.call
-            else
-              user = method_name == :friendship? ? args[0, 2] : args[0]
-              key = CacheKey.gen(method_name, user, options.merge(hash: credentials_hash))
-              @cache.fetch(key, args: [method_name, options], &do_request)
+            key = CacheKey.gen(method_name, args, hash: credentials_hash)
+            @cache.fetch(key, args: [method_name, options]) do
+              Instrumenter.perform_request(method_name, options) {send("orig_#{method_name}", *args)}
             end
           end
         end
@@ -31,7 +28,7 @@ module TwitterFriendly
     def logging(*root_args)
       root_args.each do |method_name|
         define_method(method_name) do |*args|
-          options = args.extract_options!
+          options = args.dup.extract_options!
           Instrumenter.start_processing(method_name, options)
 
           Instrumenter.complete_processing(method_name, options) do
@@ -58,15 +55,6 @@ module TwitterFriendly
       def perform_request(caller, options, &block)
         payload = {operation: 'request', args: [caller, options]}
         ::ActiveSupport::Notifications.instrument('request.twitter_friendly', payload) { yield(payload) }
-      end
-    end
-
-    module Utils
-
-      module_function
-
-      def cache_disabled?(options)
-        options.is_a?(Hash) && options.has_key?(:cache) && !options[:cache]
       end
     end
   end

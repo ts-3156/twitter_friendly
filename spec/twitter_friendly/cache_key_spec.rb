@@ -5,18 +5,19 @@ module TwitterFriendly
     let(:method) { :anything }
     let(:id) { 58135830 }
     let(:options) { {something: true} }
+    let(:cache_options) { {hash: :anything} }
 
     describe '.gen' do
       it do
-        allow(klass).to receive(:method_identifier).with(method, id, options).and_return('MI')
+        allow(klass).to receive(:method_identifier).with(method, id, options, cache_options).and_return('MI')
         allow(klass).to receive(:options_identifier).with(method, options).and_return('OI')
-        expect(klass.gen(method, id, options)).to eq("v1#{delim}#{method}#{delim}MI#{delim}OI")
+        expect(klass.gen(method, [id, options], cache_options)).to eq("v1#{delim}#{method}#{delim}MI#{delim}OI")
       end
     end
 
     describe '.method_identifier' do
       shared_examples 'boilerplate' do
-        it {expect(klass.send(:method_identifier, method, id, options)).to eq(result)}
+        it {expect(klass.send(:method_identifier, method, id, options, cache_options)).to eq(result)}
       end
 
       context 'method == :search' do
@@ -103,7 +104,7 @@ module TwitterFriendly
       end
 
       it 'encodes Hash to String' do
-        expect(klass.send(:options_identifier, :something, key: 'anything', key2: 'something')).to eq("options#{delim}key=anything&key2=something")
+        expect(klass.send(:options_identifier, :something, key: 'anything', key2: 'something')).to eq("options#{delim}key_anything_key2_something")
       end
     end
 

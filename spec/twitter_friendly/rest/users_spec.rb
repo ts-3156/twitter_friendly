@@ -3,7 +3,6 @@ module TwitterFriendly
     ::RSpec.describe Users do
       let(:dummy_class) do
         Class.new do
-          include Parallel
           include Users
 
           def credentials_hash
@@ -12,75 +11,65 @@ module TwitterFriendly
         end
       end
 
-      let(:instance) do
+      let(:client) do
         dummy_class.new.tap do |i|
           i.instance_variable_set(:@twitter, Twitter::REST::Client.new)
           i.instance_variable_set(:@cache, TwitterFriendly::Cache.new)
         end
       end
-      let(:internal_client) { instance.instance_variable_get(:@twitter) }
+      let(:internal_client) { client.instance_variable_get(:@twitter) }
       let(:id) { 58135830 }
-
-      let(:client) do
-        TwitterFriendly::Client.new(
-            consumer_key: ENV['CK'],
-            consumer_secret: ENV['CS'],
-            access_token: ENV['AT'],
-            access_token_secret: ENV['ATS']
-        )
-      end
 
       describe '#verify_credentials' do
         it do
           expect(internal_client).to receive(:verify_credentials).with(skip_status: true)
-          instance.verify_credentials
+          client.verify_credentials
         end
       end
 
       describe '#user?' do
         it do
           expect(internal_client).to receive(:user?).with(id, {})
-          instance.user?(id)
+          client.user?(id)
         end
       end
 
       describe '#user' do
         it do
           expect(internal_client).to receive(:user).with(id)
-          instance.user(id)
+          client.user(id)
         end
       end
 
       describe '#users' do
         context 'ids.length <= 100' do
+          subject { client.users(ids) }
           let(:ids) { [id] }
           it do
             expect(internal_client).to receive(:users).with(ids, {})
-            instance.users(ids)
+            subject
           end
         end
 
         context 'ids.length > 100' do
+        before { dummy_class.send(:include, Parallel) }
+
+        subject { client.users(ids) }
           let(:ids) { Array.new(101) {id} }
           it do
-            expect(instance).to receive(:_users).with(ids, {recursive: true})
-            instance.users(ids)
+            ids.each_slice(Users::MAX_USERS_PER_REQUEST).each do |ids_array|
+              expect(internal_client).to receive(:users).with(ids_array, {})
+            end
+            subject
           end
         end
       end
 
-      describe '#_users' do
-        let(:ids) { [id, id] }
-        it do
-          expect(internal_client).to receive(:users).with(ids, {})
-          instance.send(:_users, ids)
-        end
-      end
-
       describe '#blocked_ids' do
+        subject { client.blocked_ids }
         it do
-          expect(internal_client).to receive(:blocked_ids)
-          instance.blocked_ids
+          expect(internal_client).to receive(:blocked_ids).with(no_args)
+          subject
         end
       end
 

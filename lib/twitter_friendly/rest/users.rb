@@ -1,3 +1,5 @@
+require 'parallel'
+
 module TwitterFriendly
   module REST
     module Users
@@ -17,16 +19,11 @@ module TwitterFriendly
 
       def users(values, options = {})
         if values.size <= MAX_USERS_PER_REQUEST
-          key = CacheKey.gen(__method__, values, options.merge(hash: credentials_hash))
-
-          @cache.fetch(key, args: [__method__, options]) do
-            Instrumenter.perform_request(args: [__method__, super_operation: options[:super_operation]]) do
-              @twitter.send(__method__, values, options.except(:parallel, :super_operation, :recursive))&.compact&.map(&:to_hash)
-            end
-          end
+          @twitter.users(values, options)
         else
-          options[:recursive] = true
-          _users(values, options)
+          parallel(in_threads: 10) do |batch|
+            values.each_slice(MAX_USERS_PER_REQUEST) { |targets| batch.users(targets, options) }
+          end.flatten
         end
       end
 
@@ -47,40 +44,28 @@ module TwitterFriendly
         end
       end
 
-      module Caching
-        %i(
-          users
-        ).each do |name|
-          define_method(name) do |*args, &block|
-            options = args.extract_options!
-            do_request = Proc.new { options.empty? ? super(*args, &block) : super(*args, options, &block) }
+      module CachingUsers
+        def caching_users
+          method_name = :users
+          alias_method "orig_#{method_name}", method_name
 
-            if options[:recursive]
-              do_request.call
+          define_method(method_name) do |*args|
+            if args[0].size <= MAX_USERS_PER_REQUEST
+              options = args.dup.extract_options!
+              Instrumenter.start_processing(method_name, options)
+
+              Instrumenter.complete_processing(method_name, options) do
+
+                key = CacheKey.gen(method_name, args, hash: credentials_hash)
+                @cache.fetch(key, args: [method_name, options]) do
+                  Instrumenter.perform_request(method_name, options) {send("orig_#{method_name}", *args)}
+                end
+              end
             else
-              TwitterFriendly::CachingAndLogging::Instrumenter.start_processing(name, options)
-              TwitterFriendly::CachingAndLogging::Instrumenter.complete_processing(name, options, &do_request)
+              send("orig_#{method_name}", *args)
             end
           end
         end
-      end
-
-      private
-
-      def _users(values, options = {})
-        options = {super_operation: :users, parallel: true}.merge(options)
-
-        if options[:parallel]
-          require 'parallel'
-
-          parallel(in_threads: 10) do |batch|
-            values.each_slice(MAX_USERS_PER_REQUEST) { |targets| batch.users(targets, options) }
-          end.flatten
-        else
-          values.each_slice(MAX_USERS_PER_REQUEST).map do |targets|
-            users(targets, options)
-          end
-        end&.flatten&.compact&.map(&:to_hash)
       end
     end
   end
