@@ -7,14 +7,23 @@ module TwitterFriendly
 
     class << self
       def gen(method_name, args, cache_options = {})
-        options = args.dup.extract_options!
-        user = method_name == :friendship? ? args[0, 2] : args[0]
+        args_array = args.dup
+        options = args_array.extract_options!
+        user = method_name == :friendship? ? args_array[0, 2] : args_array[0]
 
-        [version,
-         method_name,
-         method_identifier(method_name, user, options, cache_options),
-         options_identifier(method_name, options)
-        ].compact.join(DELIM)
+        key =
+            [version,
+             method_name,
+             method_identifier(method_name, user, options, cache_options),
+             options_identifier(method_name, options)
+            ].compact.join(DELIM)
+
+        if ENV['SAVE_CACHE_KEY']
+          $last_cache_key = key
+          puts key
+        end
+
+        key
       end
 
       private
@@ -24,15 +33,15 @@ module TwitterFriendly
       end
 
       def method_identifier(method, user, options, cache_options)
-          case
-          when method == :search                 then "query#{DELIM}#{user}"
-          when method == :friendship?            then "from#{DELIM}#{user[0]}#{DELIM}to#{DELIM}#{user[1]}"
-          when method == :list_members           then "list_id#{DELIM}#{user}"
-          when method == :collect_with_max_id    then method_identifier(extract_super_operation(options), user, options, cache_options)
-          when method == :collect_with_cursor    then method_identifier(extract_super_operation(options), user, options, cache_options)
-          when user.nil? && cache_options[:hash] then "token-hash#{DELIM}#{options[:hash]}"
-          else user_identifier(user)
-          end
+        case
+        when method == :search                 then "query#{DELIM}#{user}"
+        when method == :friendship?            then "from#{DELIM}#{user[0]}#{DELIM}to#{DELIM}#{user[1]}"
+        when method == :list_members           then "list_id#{DELIM}#{user}"
+        when method == :collect_with_max_id    then method_identifier(extract_super_operation(options), user, options, cache_options)
+        when method == :collect_with_cursor    then method_identifier(extract_super_operation(options), user, options, cache_options)
+        when user.nil? && cache_options[:hash] then "token-hash#{DELIM}#{options[:hash]}"
+        else user_identifier(user)
+        end
       end
 
       def user_identifier(user)

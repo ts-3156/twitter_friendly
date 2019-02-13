@@ -7,7 +7,6 @@ module TwitterFriendly
     # 全体をキャッシュさせ、さらにロギングを行う
     def caching(*method_names)
       method_names.each do |method_name|
-        alias_method "orig_#{method_name}", method_name
 
         define_method(method_name) do |*args|
           options = args.dup.extract_options!
@@ -17,7 +16,7 @@ module TwitterFriendly
 
             key = CacheKey.gen(method_name, args, hash: credentials_hash)
             @cache.fetch(key, args: [method_name, options]) do
-              Instrumenter.perform_request(method_name, options) {send("orig_#{method_name}", *args)}
+              Instrumenter.perform_request(method_name, options) {super(*args)}
             end
           end
         end
@@ -31,9 +30,7 @@ module TwitterFriendly
           options = args.dup.extract_options!
           Instrumenter.start_processing(method_name, options)
 
-          Instrumenter.complete_processing(method_name, options) do
-            options.empty? ? super(*args) : super(*args, options)
-          end
+          Instrumenter.complete_processing(method_name, options) {super(*args)}
         end
       end
     end

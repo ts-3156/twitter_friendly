@@ -29,7 +29,7 @@ module TwitterFriendly
 
       describe '#user?' do
         it do
-          expect(internal_client).to receive(:user?).with(id, {})
+          expect(internal_client).to receive(:user?).with(id)
           client.user?(id)
         end
       end
@@ -42,13 +42,11 @@ module TwitterFriendly
       end
 
       describe '#users' do
-        context 'ids.length <= 100' do
-          subject { client.users(ids) }
-          let(:ids) { [id] }
-          it do
-            expect(internal_client).to receive(:users).with(ids, {})
-            subject
-          end
+        subject { client.users(ids) }
+        let(:ids) { [id] }
+        it do
+          expect(internal_client).to receive(:users).with(ids, {})
+          subject
         end
 
         context 'ids.length > 100' do

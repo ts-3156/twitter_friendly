@@ -33,8 +33,12 @@ module TwitterFriendly
       include TwitterFriendly::REST::Extension::Timelines
 
       include TwitterFriendly::REST::Collector::Caching
+
       extend TwitterFriendly::REST::Users::CachingUsers
       caching_users
+
+      extend TwitterFriendly::REST::Timelines::CachingTimelines
+      caching_timelines
     end
   end
 end

@@ -5,47 +5,85 @@ module TwitterFriendly
         Class.new do
           include Collector
           include Base
-          include Utils
           include FriendsAndFollowers
         end
       end
 
-      let(:instance) do
+      let(:client) do
         dummy_class.new.tap{|i| i.instance_variable_set(:@twitter, Twitter::REST::Client.new) }
       end
-      let(:internal_client) { instance.instance_variable_get(:@twitter) }
+      let(:internal_client) { client.instance_variable_get(:@twitter) }
       let(:id) { 58135830 }
-
-      let(:client) do
-        TwitterFriendly::Client.new(
-            consumer_key: ENV['CK'],
-            consumer_secret: ENV['CS'],
-            access_token: ENV['AT'],
-            access_token_secret: ENV['ATS']
-        )
-      end
+      let(:to_id) { 22356250 }
 
       describe '#friendship?' do
         it do
-          expect(internal_client).to receive(:friendship?).with(id, id, {})
-          instance.friendship?(id, id)
+          expect(internal_client).to receive(:friendship?).with(id, to_id, {})
+          client.friendship?(id, to_id)
         end
       end
 
       describe '#friend_ids' do
-        context 'ids <= 5000' do
-          let(:ids) {[id] }
-          it do
-            expect(instance).to receive(:fetch_resources_with_cursor)
-            instance.friend_ids(ids)
-          end
+        it do
+          expect(client).to receive(:fetch_resources_with_cursor).with(:friend_ids, id, any_args)
+          client.friend_ids(id)
         end
+      end
 
-        context 'ids > 5000' do
-          let(:ids) { Array.new(5001) {id} }
-          it do
-            expect{instance.friend_ids(ids)}.not_to raise_error(ArgumentError)
-          end
+      describe '#follower_ids' do
+        it do
+          expect(client).to receive(:fetch_resources_with_cursor).with(:follower_ids, id, any_args)
+          client.follower_ids(id)
+        end
+      end
+
+      describe '#friends' do
+        let(:id) { 58135830 }
+        let(:ids) { [1, 2, 3] }
+
+        before { dummy_class.send(:include, Users) }
+        it do
+          expect(client).to receive(:friend_ids).with(id).and_return(ids)
+          expect(client).to receive(:users).with(ids)
+          client.friends(id)
+        end
+      end
+
+      describe '#followers' do
+        let(:id) { 58135830 }
+        let(:ids) { [1, 2, 3] }
+        before { dummy_class.send(:include, Users) }
+        it do
+          expect(client).to receive(:follower_ids).with(id).and_return(ids)
+          expect(client).to receive(:users).with(ids)
+          client.followers(id)
+        end
+      end
+
+      describe '#friend_ids_and_follower_ids' do
+        let(:id) { 58135830 }
+        let(:friend_ids) { [1, 2, 3] }
+        let(:follower_ids) { [4, 5, 6] }
+        before { dummy_class.send(:include, Parallel) }
+        it do
+          expect(client).to receive(:friend_ids).with(id).and_return(friend_ids)
+          expect(client).to receive(:follower_ids).with(id).and_return(follower_ids)
+          expect(client.friend_ids_and_follower_ids(id)).to match_array([friend_ids, follower_ids])
+        end
+      end
+
+      describe '#friends_and_followers' do
+        let(:id) { 58135830 }
+        let(:friend_ids) { [1, 2, 3] }
+        let(:follower_ids) { [3, 4, 5] }
+        let(:users) { (1..5).map{|n| {id: n} } }
+        let(:friends) { friend_ids.map{|n| {id: n} } }
+        let(:followers) { follower_ids.map{|n| {id: n} } }
+        before { dummy_class.send(:include, Users) }
+        it do
+          expect(client).to receive(:friend_ids_and_follower_ids).with(id).and_return([friend_ids, follower_ids])
+          expect(client).to receive(:users).with((friend_ids + follower_ids).uniq).and_return(users)
+          expect(client.friends_and_followers(id)).to match_array([friends, followers])
         end
       end
     end
