@@ -7,7 +7,7 @@ module TwitterFriendly
         options[:count] = [max_count, total_count].min
         collect_options = {call_count: call_count, total_count: total_count}
 
-        collect_with_max_id(user, [], nil, options, collect_options) do |max_id|
+        collect_with_max_id(user, [], nil, options.merge(super_operation: method_name), collect_options) do |max_id|
           options[:max_id] = max_id unless max_id.nil?
 
           result = @twitter.send(method_name, *[user, options].compact)
@@ -20,7 +20,7 @@ module TwitterFriendly
       #
       # @option options [Integer] :count
       def fetch_resources_with_cursor(method_name, user, options)
-        collect_with_cursor(user, [], -1, options) do |next_cursor|
+        collect_with_cursor(user, [], -1, options.merge(super_operation: method_name)) do |next_cursor|
           options[:cursor] = next_cursor unless next_cursor.nil?
           @twitter.send(method_name, user, options)
         end

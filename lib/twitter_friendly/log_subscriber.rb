@@ -14,13 +14,6 @@ module TwitterFriendly
       {args: args}.merge(payload.except(:args)).inspect
     end
 
-    INDENT = '  '
-
-    def indentation(payload)
-      sp = payload[:super_operation]&.is_a?(Array) ? (INDENT * payload[:super_operation].size) : ''
-      sp + (payload[:name] == 'write' ? INDENT : '')
-    end
-
     module_function
 
     def logger
@@ -39,7 +32,7 @@ module TwitterFriendly
     def start_processing(event)
       debug do
         payload = event.payload
-        name = "#{indentation(payload)}TF::Started #{payload[:operation]}"
+        name = "TF::Started #{payload[:operation]}"
 
         if payload[:super_operation]
           "#{name} in #{payload[:super_operation][0]} at #{Time.now}"
@@ -54,7 +47,7 @@ module TwitterFriendly
         payload = event.payload
         name = "TF::Completed #{payload[:operation]} in #{event.duration.round(1)}ms"
 
-        "#{indentation(payload)}#{name}#{" #{truncated_payload(payload)}" unless payload.empty?}"
+        "#{name}#{" #{truncated_payload(payload)}" unless payload.empty?}"
       end
     end
 
@@ -63,9 +56,9 @@ module TwitterFriendly
         payload = event.payload
         payload.delete(:name)
         operation = payload.delete(:operation)
-        name = "  TW::#{operation.capitalize} #{payload[:args].last[:super_operation][0]} in #{payload[:args][0]} (#{event.duration.round(1)}ms)"
+        name = "  TW::#{operation.capitalize} #{payload[:args].last[:super_operation]} in #{payload[:args][0]} (#{event.duration.round(1)}ms)"
         name = color(name, BLUE, true)
-        "  #{indentation(payload)}#{name}#{" #{payload[:args][1]}" unless payload.empty?}"
+        "  #{name}#{" #{payload[:args][1]}" unless payload.empty?}"
       end
     end
 
@@ -77,7 +70,7 @@ module TwitterFriendly
         name = "  TW::#{operation.capitalize} #{payload[:args][0]} (#{event.duration.round(1)}ms)"
         c = (%i(encode decode).include?(operation.to_sym)) ? YELLOW : CYAN
         name = color(name, c, true)
-        "  #{indentation(payload)}#{name}#{" #{payload[:args][1]}" unless payload.empty?}"
+        "  #{name}#{" #{payload[:args][1]}" unless payload.empty?}"
       end
     end
 
@@ -102,7 +95,7 @@ module TwitterFriendly
         name = "  AS::#{operation.capitalize}#{hit} #{payload[:key].split(':')[1]} (#{event.duration.round(1)}ms)"
         name = color(name, MAGENTA, true)
         # :name, :expires_in, :super_operation, :hit, :race_condition_ttl, :tf_super_operation, :tf_super_super_operation
-        "#{indentation(payload)}#{name} #{(payload.slice(:key).inspect)}"
+        "#{name} #{(payload.slice(:key).inspect)}"
       end
     end
 

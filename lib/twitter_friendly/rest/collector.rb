@@ -2,7 +2,7 @@ module TwitterFriendly
   module REST
     module Collector
       def collect_with_max_id(user, collection, max_id, options, collect_options, &block)
-        key = CacheKey.gen(__method__, [user, options.merge(max_id: max_id)], hash: credentials_hash)
+        key = CacheKey.gen(__method__, [user, options.merge(max_id: max_id)], hash: credentials_hash, super_operation: options[:super_operation])
 
         tweets =
             @cache.fetch(key, args: [__method__, options]) do
@@ -25,7 +25,7 @@ module TwitterFriendly
       #
       # @option options [Integer] :count
       def collect_with_cursor(user, collection, cursor, options, &block)
-        key = CacheKey.gen(__method__, [user, options.merge(cursor: cursor)], hash: credentials_hash)
+        key = CacheKey.gen(__method__, [user, options.merge(cursor: cursor)], hash: credentials_hash, super_operation: options[:super_operation])
 
         response =
             @cache.fetch(key, args: [__method__, options]) do

@@ -15,7 +15,7 @@ module TwitterFriendly
             [version,
              method_name,
              method_identifier(method_name, user, options, cache_options),
-             options_identifier(method_name, options)
+             options_identifier(method_name, options, cache_options)
             ].compact.join(DELIM)
 
         if ENV['SAVE_CACHE_KEY']
@@ -37,8 +37,8 @@ module TwitterFriendly
         when method == :search                 then "query#{DELIM}#{user}"
         when method == :friendship?            then "from#{DELIM}#{user[0]}#{DELIM}to#{DELIM}#{user[1]}"
         when method == :list_members           then "list_id#{DELIM}#{user}"
-        when method == :collect_with_max_id    then method_identifier(extract_super_operation(options), user, options, cache_options)
-        when method == :collect_with_cursor    then method_identifier(extract_super_operation(options), user, options, cache_options)
+        when method == :collect_with_max_id    then method_identifier(extract_super_operation(cache_options), user, options, cache_options)
+        when method == :collect_with_cursor    then method_identifier(extract_super_operation(cache_options), user, options, cache_options)
         when user.nil? && cache_options[:hash] then "token-hash#{DELIM}#{options[:hash]}"
         else user_identifier(user)
         end
@@ -55,10 +55,10 @@ module TwitterFriendly
         end
       end
 
-      def options_identifier(method, options)
+      def options_identifier(method, options, cache_options)
         # TODO 内部的な値はすべてprefix _tf_ をつける
         opt = options.except(:hash, :call_count, :call_limit, :super_operation, :super_super_operation, :recursive, :parallel)
-        opt[:in] = extract_super_operation(options) if %i(collect_with_max_id collect_with_cursor).include?(method)
+        opt[:in] = extract_super_operation(cache_options) if %i(collect_with_max_id collect_with_cursor).include?(method)
         delim = '_'
 
         if opt.empty?
