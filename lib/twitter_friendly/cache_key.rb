@@ -2,7 +2,7 @@ require 'digest/md5'
 
 module TwitterFriendly
   class CacheKey
-    DELIM = ':'
+    DELIM = '__'
     VERSION = '1'
 
     class << self
@@ -51,7 +51,7 @@ module TwitterFriendly
         if opt.empty?
           nil
         else
-          str = opt.map {|k, v| "#{k}=#{v}"}.join('&')
+          str = opt.map {|k, v| "#{k}_#{v}"}.join('_')
           "options#{DELIM}#{str}"
         end
       end
