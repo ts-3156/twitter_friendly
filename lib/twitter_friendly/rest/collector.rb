@@ -2,9 +2,8 @@ module TwitterFriendly
   module REST
     module Collector
       def collect_with_max_id(user, collection, max_id, options, collect_options, &block)
-        key = CacheKey.gen(__method__, [user, options.merge(max_id: max_id, super_operation: collect_options[:super_operation])], hash: credentials_hash)
+        key = CacheKey.gen(__method__, [user, options.merge(max_id: max_id)], hash: credentials_hash)
 
-          # TODO Handle {cache: false} option
         tweets =
             @cache.fetch(key, args: [__method__, options]) do
               Instrumenter.perform_request(__method__, options) {yield(max_id)}
@@ -25,12 +24,9 @@ module TwitterFriendly
       # @param cursor [Integer]
       #
       # @option options [Integer] :count
-      # @option options [String] :super_operation
-      # @option options [String] :super_super_operation
       def collect_with_cursor(user, collection, cursor, options, &block)
         key = CacheKey.gen(__method__, [user, options.merge(cursor: cursor)], hash: credentials_hash)
 
-        # TODO Handle {cache: false} option
         response =
             @cache.fetch(key, args: [__method__, options]) do
               Instrumenter.perform_request(__method__, options) {yield(cursor).attrs}
@@ -52,7 +48,7 @@ module TwitterFriendly
         # それを防ぐために、特別にここでキャッシュの処理を登録している。
 
         def perform_request(method_name, options, &block)
-          payload = {operation: 'collect', args: [method_name, options.slice(:max_id, :cursor, :super_operation)]}
+          payload = {operation: 'collect', args: [method_name, options.slice(:max_id, :cursor)]}
           ::ActiveSupport::Notifications.instrument('collect.twitter_friendly', payload) { yield(payload) }
         end
       end
@@ -63,14 +59,14 @@ module TwitterFriendly
           collect_with_cursor
         ).each do |name|
           define_method(name) do |*args, &block|
-            options = args.extract_options!
-            do_request = Proc.new { options.empty? ? super(*args, &block) : super(*args, options, &block) }
+            options = args.dup.extract_options!
+            do_request = Proc.new { super(*args, &block) }
 
             if options[:recursive]
               do_request.call
             else
               TwitterFriendly::CachingAndLogging::Instrumenter.start_processing(name, options)
-              TwitterFriendly::CachingAndLogging::Instrumenter.complete_processing(name, options, &do_request)
+              TwitterFriendly::CachingAndLogging::Instrumenter.complete_processing(name, options) {super(*args, &block)}
             end
           end
         end

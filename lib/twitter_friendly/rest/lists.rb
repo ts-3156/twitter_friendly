@@ -14,7 +14,6 @@ module TwitterFriendly
       # @option options [Integer] :count The number of tweets to return per page, up to a maximum of 5000.
       def memberships(*args)
         options = {count: MAX_LISTS_PER_REQUEST}.merge(args.extract_options!)
-        push_operations(options, __method__)
         fetch_resources_with_cursor(__method__, args[0], options)
       end
 
@@ -30,7 +29,6 @@ module TwitterFriendly
       # @option options [Integer] :count The number of tweets to return per page, up to a maximum of 5000.
       def list_members(*args)
         options = {count: MAX_MEMBERS_PER_REQUEST, skip_status: 1}.merge(args.extract_options!)
-        push_operations(options, __method__)
         fetch_resources_with_cursor(__method__, args[0], options)
       end
     end
