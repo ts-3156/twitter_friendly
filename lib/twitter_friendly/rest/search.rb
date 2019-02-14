@@ -9,7 +9,7 @@ module TwitterFriendly
         options = {result_type: :recent}.merge(options)
 
         if options[:count] <= MAX_TWEETS_PER_REQUEST
-          @twitter.search(options)&.attrs[:statuses]
+          @twitter.search(options)&.attrs&.fetch(:statuses)
         else
           fetch_tweets_with_max_id(__method__, MAX_TWEETS_PER_REQUEST, query, options)
         end

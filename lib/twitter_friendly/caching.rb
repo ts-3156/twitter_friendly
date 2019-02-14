@@ -33,5 +33,24 @@ module TwitterFriendly
         end
       end
     end
+
+    def caching_resources_with_cursor(*method_names)
+      method_names.each do |method_name|
+        options = args.dup.extract_options!
+
+        if options.has_key?(:cursor)
+          TwitterFriendly::CachingAndLogging::Instrumenter.start_processing(method_name, options)
+
+          TwitterFriendly::CachingAndLogging::Instrumenter.complete_processing(method_name, options) do
+            key = CacheKey.gen(method_name, args, hash: credentials_hash)
+            @cache.fetch(key, args: [method_name, options]) do
+              TwitterFriendly::CachingAndLogging::Instrumenter.perform_request(method_name, options) {super(*args)}
+            end
+          end
+        else
+          super(*args)
+        end
+      end
+    end
   end
 end

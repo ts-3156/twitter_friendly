@@ -19,12 +19,24 @@ module TwitterFriendly
       # @option options [Integer] :count The number of tweets to return per page, up to a maximum of 5000.
       def friend_ids(*args)
         options = {count: MAX_IDS_PER_REQUEST}.merge(args.extract_options!)
-        fetch_resources_with_cursor(__method__, args[0], options)
+        args << options
+
+        if options.has_key?(:cursor)
+          @twitter.friend_ids(*args)&.attrs
+        else
+          fetch_resources_with_cursor(__method__, *args)
+        end
       end
 
       def follower_ids(*args)
         options = {count: MAX_IDS_PER_REQUEST}.merge(args.extract_options!)
-        fetch_resources_with_cursor(__method__, args[0], options)
+        args << options
+
+        if options.has_key?(:cursor)
+          @twitter.follower_ids(*args)&.attrs
+        else
+          fetch_resources_with_cursor(__method__, *args)
+        end
       end
 
       # @return [Hash]

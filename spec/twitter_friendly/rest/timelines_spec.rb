@@ -4,7 +4,6 @@ module TwitterFriendly
       let(:dummy_class) do
         Class.new do
           include Collector
-          include Base
           include Timelines
         end
       end

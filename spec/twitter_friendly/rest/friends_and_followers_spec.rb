@@ -4,8 +4,10 @@ module TwitterFriendly
       let(:dummy_class) do
         Class.new do
           include Collector
-          include Base
           include FriendsAndFollowers
+
+          def user(*args)
+          end
         end
       end
 
@@ -24,16 +26,70 @@ module TwitterFriendly
       end
 
       describe '#friend_ids' do
-        it do
-          expect(client).to receive(:fetch_resources_with_cursor).with(:friend_ids, id, count: 5000)
-          client.friend_ids(id)
+        let(:options) { {count: 5000} }
+
+        context 'With cursor' do
+          before { options.merge!(cursor: -1) }
+
+          it do
+            expect(internal_client).to receive(:friend_ids).with(id, options)
+            client.friend_ids(id)
+          end
+
+          context 'Without params' do
+            it do
+              expect(internal_client).to receive(:friend_ids).with(options)
+              client.friend_ids
+            end
+          end
+        end
+
+        context 'Without cursor' do
+          it do
+            expect(client).to receive(:fetch_resources_with_cursor).with(:friend_ids, id, options)
+            client.friend_ids(id)
+          end
+
+          context 'Without params' do
+            it do
+              expect(client).to receive(:fetch_resources_with_cursor).with(:friend_ids, options)
+              client.friend_ids
+            end
+          end
         end
       end
 
       describe '#follower_ids' do
-        it do
-          expect(client).to receive(:fetch_resources_with_cursor).with(:follower_ids, id, count: 5000)
-          client.follower_ids(id)
+        let(:options) { {count: 5000} }
+
+        context 'With cursor' do
+          before { options.merge!(cursor: -1) }
+
+          it do
+            expect(internal_client).to receive(:follower_ids).with(id, options)
+            client.follower_ids(id)
+          end
+
+          context 'Without params' do
+            it do
+              expect(internal_client).to receive(:follower_ids).with(options)
+              client.follower_ids
+            end
+          end
+        end
+
+        context 'Without cursor' do
+          it do
+            expect(client).to receive(:fetch_resources_with_cursor).with(:follower_ids, id, options)
+            client.follower_ids(id)
+          end
+
+          context 'Without params' do
+            it do
+              expect(client).to receive(:fetch_resources_with_cursor).with(:follower_ids, options)
+              client.follower_ids
+            end
+          end
         end
       end
 
