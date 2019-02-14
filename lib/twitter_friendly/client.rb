@@ -1,6 +1,7 @@
 require 'forwardable'
 
 require 'twitter_friendly/caching_and_logging'
+require 'twitter_friendly/caching'
 require 'twitter_friendly/rest/api'
 require 'twitter_friendly/utils'
 
@@ -15,8 +16,8 @@ module TwitterFriendly
 
     extend TwitterFriendly::CachingAndLogging
     caching :user, :friendship?, :verify_credentials, :user?, :blocked_ids
-    logging :favorites, :friend_ids, :follower_ids, :friends, :followers, :friend_ids_and_follower_ids, :friends_and_followers,
-            :search, :memberships, :list_members, :retweeters_ids
+    logging :friend_ids, :follower_ids, :friends, :followers, :friend_ids_and_follower_ids, :friends_and_followers,
+            :memberships, :list_members, :retweeters_ids
 
     def initialize(*args)
       options = args.extract_options!

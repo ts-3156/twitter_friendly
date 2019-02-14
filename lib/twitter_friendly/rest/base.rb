@@ -9,8 +9,8 @@ module TwitterFriendly
 
         collect_with_max_id(user, [], nil, options.merge(super_operation: method_name), collect_options) do |max_id|
           options[:max_id] = max_id unless max_id.nil?
-
           result = send(method_name, *[user, options].compact)
+
           if method_name == :search
             result.attrs[:statuses]
           else

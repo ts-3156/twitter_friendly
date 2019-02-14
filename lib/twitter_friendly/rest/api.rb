@@ -35,8 +35,8 @@ module TwitterFriendly
       extend TwitterFriendly::REST::Users::CachingUsers
       caching_users
 
-      extend TwitterFriendly::REST::Timelines::CachingTimelines
-      caching_timelines
+      extend TwitterFriendly::Caching
+      caching_tweets_with_max_id :home_timeline, :user_timeline, :mentions_timeline, :favorites, :search
     end
   end
 end
