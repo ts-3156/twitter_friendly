@@ -11,7 +11,6 @@ require 'twitter_friendly/rest/tweets'
 
 # 後方互換性のために残した
 require 'twitter_friendly/rest/extension/clusters'
-require 'twitter_friendly/rest/extension/timelines'
 
 module TwitterFriendly
   module REST
@@ -28,7 +27,6 @@ module TwitterFriendly
       include TwitterFriendly::REST::Tweets
 
       include TwitterFriendly::REST::Extension::Clusters
-      include TwitterFriendly::REST::Extension::Timelines
     end
   end
 end
