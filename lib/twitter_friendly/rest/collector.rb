@@ -1,15 +1,17 @@
 module TwitterFriendly
   module REST
     module Collector
-      def fetch_tweets_with_max_id(method_name, max_count, user, options)
+      def fetch_tweets_with_max_id(method_name, max_count, *args)
+        options = args.dup.extract_options!
+
         total_count = options.delete(:count) || max_count
         call_count = total_count / max_count + (total_count % max_count == 0 ? 0 : 1)
         options[:count] = [max_count, total_count].min
         collect_options = {call_count: call_count, total_count: total_count}
 
-        collect_with_max_id(user, [], nil, options, collect_options) do |max_id|
+        collect_with_max_id([], nil, collect_options) do |max_id|
           options[:max_id] = max_id unless max_id.nil?
-          result = send(method_name, *[user, options].compact)
+          result = send(method_name, *args)
 
           if method_name == :search
             result.attrs[:statuses]
@@ -36,7 +38,7 @@ module TwitterFriendly
         end
       end
 
-      def collect_with_max_id(user, collection, max_id, options, collect_options, &block)
+      def collect_with_max_id(collection, max_id, collect_options, &block)
         tweets = yield(max_id)
         return collection if tweets.nil?
 
@@ -44,7 +46,7 @@ module TwitterFriendly
         if tweets.empty? || (collect_options[:call_count] -= 1) < 1
           collection.flatten
         else
-          collect_with_max_id(user, collection, tweets.last[:id] - 1, options, collect_options, &block)
+          collect_with_max_id(collection, tweets.last[:id] - 1, collect_options, &block)
         end
       end
 
