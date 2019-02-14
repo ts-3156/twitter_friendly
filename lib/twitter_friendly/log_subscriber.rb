@@ -58,7 +58,7 @@ module TwitterFriendly
         operation = payload.delete(:operation)
         name = "  TW::#{operation.capitalize} #{payload[:args].last[:super_operation]} in #{payload[:args][0]} (#{event.duration.round(1)}ms)"
         name = color(name, BLUE, true)
-        "  #{name}#{" #{payload[:args][1]}" unless payload.empty?}"
+        "  #{name}"
       end
     end
 
@@ -67,7 +67,7 @@ module TwitterFriendly
         payload = event.payload
         payload.delete(:name)
         operation = payload.delete(:operation)
-        name = "  TW::#{operation.capitalize} #{payload[:args][0]} (#{event.duration.round(1)}ms)"
+        name = "  TW::#{operation.capitalize} #{payload[:args][0] if payload[:args]&.is_a?(Array)} (#{event.duration.round(1)}ms)"
         c = (%i(encode decode).include?(operation.to_sym)) ? YELLOW : CYAN
         name = color(name, c, true)
         "  #{name}#{" #{payload[:args][1]}" unless payload.empty?}"
@@ -92,7 +92,7 @@ module TwitterFriendly
         payload = event.payload
         operation = payload[:super_operation] == :fetch ? :fetch : payload[:name]
         hit = %i(read fetch).include?(operation.to_sym) && payload[:hit] ? ' (Hit)' : ''
-        name = "  AS::#{operation.capitalize}#{hit} #{payload[:key].split(':')[1]} (#{event.duration.round(1)}ms)"
+        name = "  AS::#{operation.capitalize}#{hit} #{payload[:key].split('__')[1]} (#{event.duration.round(1)}ms)"
         name = color(name, MAGENTA, true)
         # :name, :expires_in, :super_operation, :hit, :race_condition_ttl, :tf_super_operation, :tf_super_super_operation
         "#{name} #{(payload.slice(:key).inspect)}"

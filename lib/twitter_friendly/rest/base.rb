@@ -10,8 +10,16 @@ module TwitterFriendly
         collect_with_max_id(user, [], nil, options.merge(super_operation: method_name), collect_options) do |max_id|
           options[:max_id] = max_id unless max_id.nil?
 
-          result = @twitter.send(method_name, *[user, options].compact)
-          (method_name == :search) ? result.attrs[:statuses] : result.map(&:attrs)
+          result = send(method_name, *[user, options].compact)
+          if method_name == :search
+            result.attrs[:statuses]
+          else
+            if result.is_a?(Array) && result[0].respond_to?(:attrs)
+              result.map(&:attrs)
+            else
+              result
+            end
+          end
         end
       end
 
@@ -22,7 +30,7 @@ module TwitterFriendly
       def fetch_resources_with_cursor(method_name, user, options)
         collect_with_cursor(user, [], -1, options.merge(super_operation: method_name)) do |next_cursor|
           options[:cursor] = next_cursor unless next_cursor.nil?
-          @twitter.send(method_name, user, options)
+          send(method_name, user, options)
         end
       end
     end

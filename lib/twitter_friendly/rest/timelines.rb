@@ -7,7 +7,7 @@ module TwitterFriendly
       def home_timeline(options = {})
         options = {include_rts: true, count: MAX_TWEETS_PER_REQUEST}.merge(options)
         if options[:count] <= MAX_TWEETS_PER_REQUEST
-          @twitter.home_timeline(options)
+          @twitter.home_timeline(options)&.map(&:attrs)
         else
           fetch_tweets_with_max_id(__method__, MAX_TWEETS_PER_REQUEST, nil, options)
         end
@@ -16,7 +16,7 @@ module TwitterFriendly
       def user_timeline(*args)
         options = {include_rts: true, count: MAX_TWEETS_PER_REQUEST}.merge(args.extract_options!)
         if options[:count] <= MAX_TWEETS_PER_REQUEST
-          @twitter.user_timeline(*args, options)
+          @twitter.user_timeline(*args, options)&.map(&:attrs)
         else
           fetch_tweets_with_max_id(__method__, MAX_TWEETS_PER_REQUEST, args[0], options)
         end
@@ -25,7 +25,7 @@ module TwitterFriendly
       def mentions_timeline(options = {})
         options = {include_rts: true, count: MAX_TWEETS_PER_REQUEST}.merge(options)
         if options[:count] <= MAX_TWEETS_PER_REQUEST
-          @twitter.mentions_timeline(options)
+          @twitter.mentions_timeline(options)&.map(&:attrs)
         else
           fetch_tweets_with_max_id(__method__, MAX_TWEETS_PER_REQUEST, nil, options)
         end
@@ -44,7 +44,6 @@ module TwitterFriendly
                 TwitterFriendly::CachingAndLogging::Instrumenter.start_processing(method_name, options)
 
                 TwitterFriendly::CachingAndLogging::Instrumenter.complete_processing(method_name, options) do
-
                   key = CacheKey.gen(method_name, args, hash: credentials_hash)
                   @cache.fetch(key, args: [method_name, options]) do
                     TwitterFriendly::CachingAndLogging::Instrumenter.perform_request(method_name, options) {super(*args)}
