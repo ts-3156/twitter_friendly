@@ -16,8 +16,7 @@ module TwitterFriendly
 
     extend TwitterFriendly::CachingAndLogging
     caching :user, :friendship?, :verify_credentials, :user?, :blocked_ids
-    logging :friend_ids, :follower_ids, :friends, :followers, :friend_ids_and_follower_ids, :friends_and_followers,
-            :memberships, :list_members, :retweeters_ids
+    logging :friends, :followers, :friend_ids_and_follower_ids, :friends_and_followers, :retweeters_ids
 
     def initialize(*args)
       options = args.extract_options!

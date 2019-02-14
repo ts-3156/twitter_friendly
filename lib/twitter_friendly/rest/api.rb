@@ -35,6 +35,7 @@ module TwitterFriendly
 
       extend TwitterFriendly::Caching
       caching_tweets_with_max_id :home_timeline, :user_timeline, :mentions_timeline, :favorites, :search
+      caching_resources_with_cursor :friend_ids, :follower_ids, :memberships, :list_members
     end
   end
 end

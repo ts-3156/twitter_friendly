@@ -69,5 +69,9 @@ module TwitterFriendly
         it_behaves_like 'boilerplate'
       end
     end
+
+    describe '.caching_resources_with_cursor' do
+
+    end
   end
 end
