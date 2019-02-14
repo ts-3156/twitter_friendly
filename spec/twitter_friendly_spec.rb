@@ -125,11 +125,41 @@ RSpec.describe TwitterFriendly do
   end
 
   describe '#friend_ids' do
-
+    let(:id) { 'ts_3156' }
+    subject { client.friend_ids(id) }
+    let(:friend_ids) do
+      klass =
+          Class.new do
+            def attrs
+              {ids: [1, 2, 3], next_cursor: 0}
+            end
+          end
+      klass.new
+    end
+    it do
+      expect(internal_client).to receive(:friend_ids).exactly(1).times.with(id, count: 5000, cursor: -1).and_return(friend_ids)
+      is_expected.to match_array(friend_ids.attrs[:ids])
+      is_expected.to match_array(friend_ids.attrs[:ids])
+    end
   end
 
   describe '#follower_ids' do
-
+    let(:id) { 'ts_3156' }
+    subject { client.follower_ids(id) }
+    let(:follower_ids) do
+      klass =
+          Class.new do
+            def attrs
+              {ids: [1, 2, 3], next_cursor: 0}
+            end
+          end
+      klass.new
+    end
+    it do
+      expect(internal_client).to receive(:follower_ids).exactly(1).times.with(id, count: 5000, cursor: -1).and_return(follower_ids)
+      is_expected.to match_array(follower_ids.attrs[:ids])
+      is_expected.to match_array(follower_ids.attrs[:ids])
+    end
   end
 
   describe '#home_timeline' do

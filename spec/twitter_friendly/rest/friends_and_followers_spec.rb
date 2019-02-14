@@ -25,14 +25,14 @@ module TwitterFriendly
 
       describe '#friend_ids' do
         it do
-          expect(client).to receive(:fetch_resources_with_cursor).with(:friend_ids, id, any_args)
+          expect(client).to receive(:fetch_resources_with_cursor).with(:friend_ids, id, count: 5000)
           client.friend_ids(id)
         end
       end
 
       describe '#follower_ids' do
         it do
-          expect(client).to receive(:fetch_resources_with_cursor).with(:follower_ids, id, any_args)
+          expect(client).to receive(:fetch_resources_with_cursor).with(:follower_ids, id, count: 5000)
           client.follower_ids(id)
         end
       end
