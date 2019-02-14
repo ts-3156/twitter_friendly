@@ -9,9 +9,6 @@ require 'twitter_friendly/rest/favorites'
 require 'twitter_friendly/rest/lists'
 require 'twitter_friendly/rest/tweets'
 
-# 後方互換性のために残した
-require 'twitter_friendly/rest/extension/clusters'
-
 module TwitterFriendly
   module REST
     module API
@@ -25,8 +22,6 @@ module TwitterFriendly
       include TwitterFriendly::REST::Favorites
       include TwitterFriendly::REST::Lists
       include TwitterFriendly::REST::Tweets
-
-      include TwitterFriendly::REST::Extension::Clusters
     end
   end
 end
