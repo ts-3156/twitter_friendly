@@ -39,6 +39,13 @@ module TwitterFriendly
           expect(internal_client).to receive(:user).with(id)
           client.user(id)
         end
+
+        context 'Without params' do
+          it do
+            expect(internal_client).to receive(:user).with(no_args)
+            client.user
+          end
+        end
       end
 
       describe '#users' do
@@ -50,9 +57,9 @@ module TwitterFriendly
         end
 
         context 'ids.length > 100' do
-        before { dummy_class.send(:include, Parallel) }
+          subject { client.users(ids) }
+          before { dummy_class.send(:include, Parallel) }
 
-        subject { client.users(ids) }
           let(:ids) { Array.new(101) {id} }
           it do
             ids.each_slice(Users::MAX_USERS_PER_REQUEST).each do |ids_array|
@@ -70,7 +77,6 @@ module TwitterFriendly
           subject
         end
       end
-
     end
   end
 end

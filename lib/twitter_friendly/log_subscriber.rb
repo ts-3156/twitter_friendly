@@ -70,7 +70,7 @@ module TwitterFriendly
         name = "  TW::#{operation.capitalize} #{payload[:args][0] if payload[:args]&.is_a?(Array)} (#{event.duration.round(1)}ms)"
         c = (%i(encode decode).include?(operation.to_sym)) ? YELLOW : CYAN
         name = color(name, c, true)
-        "  #{name}#{" #{payload[:args][1]}" unless payload.empty?}"
+        "  #{name}#{" #{payload[:args][1] if payload[:args]&.is_a?(Array)}" unless payload.empty?}"
       end
     end
 

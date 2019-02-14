@@ -18,6 +18,12 @@ module TwitterFriendly
     caching :user, :friendship?, :verify_credentials, :user?, :blocked_ids
     logging :friends, :followers, :friend_ids_and_follower_ids, :friends_and_followers, :retweeters_ids
 
+
+    extend TwitterFriendly::Caching
+    caching_users
+    caching_tweets_with_max_id :home_timeline, :user_timeline, :mentions_timeline, :favorites, :search
+    caching_resources_with_cursor :friend_ids, :follower_ids, :memberships, :list_members
+
     def initialize(*args)
       options = args.extract_options!
       @twitter = Twitter::REST::Client.new(options.slice(:access_token, :access_token_secret, :consumer_key, :consumer_secret))
