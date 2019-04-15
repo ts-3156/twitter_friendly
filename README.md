@@ -5,16 +5,16 @@
 
 The twitter_friendly is a gem to crawl many friends/followers with minimal code. When you want to get a list of friends/followers for a user, all you need to write is the below.
 
-```
+```ruby
 require 'twitter_friendly'
 
 client =
     TwitterFriendly::Client.new(
-        consumer_key: 'CONSUMER_KEY',
-        consumer_secret: 'CONSUMER_SECRET',
-        access_token: 'ACCESS_TOKEN',
+        consumer_key:        'CONSUMER_KEY',
+        consumer_secret:     'CONSUMER_SECRET',
+        access_token:        'ACCESS_TOKEN',
         access_token_secret: 'ACCESS_TOKEN_SECRET',
-        expires_in: 86400 # 1day
+        expires_in:          86400 # 1day
     )
 
 ids = []
@@ -44,13 +44,13 @@ gem 'twitter_friendly'
 
 And then execute:
 
-```sh
+```bash
 $ bundle
 ```
 
 Or install it yourself as:
 
-```sh
+```bash
 $ gem install twitter_friendly
 ```
 
@@ -58,7 +58,7 @@ $ gem install twitter_friendly
 
 You can pass configuration options as a block to `TwitterFriendly::Client.new` just like the below.
 
-```
+```ruby
 client = TwitterFriendly::Client.new do |config|
   config.consumer_key        = "YOUR_CONSUMER_KEY"
   config.consumer_secret     = "YOUR_CONSUMER_SECRET"
