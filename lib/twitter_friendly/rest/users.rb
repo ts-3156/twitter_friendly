@@ -3,8 +3,8 @@ require 'parallel'
 module TwitterFriendly
   module REST
     module Users
-      def verify_credentials(options = {})
-        @twitter.verify_credentials({skip_status: true}.merge(options))&.to_hash
+      def verify_credentials(include_entities: false, skip_status: true, include_email: true)
+        @twitter.verify_credentials(include_entities: include_entities, skip_status: skip_status, include_email: include_email)&.to_hash
       end
 
       def user?(*args)
@@ -19,9 +19,9 @@ module TwitterFriendly
 
       def users(values, options = {})
         if values.size <= MAX_USERS_PER_REQUEST
-          @twitter.users(values, options)
+          @twitter.users(values, options).map(&:to_h)
         else
-          parallel(in_threads: 10) do |batch|
+          parallel(in_threads: 6) do |batch|
             values.each_slice(MAX_USERS_PER_REQUEST) { |targets| batch.users(targets, options) }
           end.flatten
         end

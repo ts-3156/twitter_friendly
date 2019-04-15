@@ -39,18 +39,18 @@ module TwitterFriendly
 
       module_function
 
-      def start_processing(operation, options)
-        payload = {operation: operation}.merge(options)
+      def start_processing(method_name, options)
+        payload = {operation: method_name}.merge(options)
         ::ActiveSupport::Notifications.instrument('start_processing.twitter_friendly', payload) {}
       end
 
-      def complete_processing(operation, options)
-        payload = {operation: operation}.merge(options)
+      def complete_processing(method_name, options)
+        payload = {operation: method_name}.merge(options)
         ::ActiveSupport::Notifications.instrument('complete_processing.twitter_friendly', payload) { yield(payload) }
       end
 
-      def perform_request(caller, options, &block)
-        payload = {operation: 'request', args: [caller, options]}
+      def perform_request(method_name, options, &block)
+        payload = {operation: 'request', args: [method_name, options]}
         ::ActiveSupport::Notifications.instrument('request.twitter_friendly', payload) { yield(payload) }
       end
     end

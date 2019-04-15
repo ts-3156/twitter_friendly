@@ -1,6 +1,7 @@
 module TwitterFriendly
   module Logging
     def truncated_payload(payload)
+      return '' if payload.empty?
       return payload.inspect if !payload.has_key?(:args) || !payload[:args].is_a?(Array) || payload[:args].empty? || !payload[:args][0].is_a?(Array)
 
       args = payload[:args].dup
@@ -30,24 +31,28 @@ module TwitterFriendly
     include Logging
 
     def start_processing(event)
-      debug do
+      info do
         payload = event.payload
-        name = "TF::Started #{payload[:operation]}"
+        operation = payload.delete(:operation)
 
         if payload[:super_operation]
-          "#{name} in #{payload[:super_operation][0]} at #{Time.now}"
+          "TF::Started #{operation} in #{payload[:super_operation][0]} at #{Time.now}"
         else
-          "#{name} at #{Time.now}"
+          "TF::Started #{operation} at #{Time.now}"
         end
       end
     end
 
     def complete_processing(event)
-      debug do
+      info do
         payload = event.payload
-        name = "TF::Completed #{payload[:operation]} in #{event.duration.round(1)}ms"
+        operation = payload.delete(:operation)
 
-        "#{name}#{" #{truncated_payload(payload)}" unless payload.empty?}"
+        if payload.empty?
+          "TF::Completed #{operation} in #{event.duration.round(1)}ms"
+        else
+          "TF::Completed #{operation} in #{event.duration.round(1)}ms #{truncated_payload(payload)}"
+        end
       end
     end
 
@@ -66,11 +71,19 @@ module TwitterFriendly
       debug do
         payload = event.payload
         payload.delete(:name)
-        operation = payload.delete(:operation)
-        name = "  TW::#{operation.capitalize} #{payload[:args][0] if payload[:args]&.is_a?(Array)} (#{event.duration.round(1)}ms)"
-        c = (%i(encode decode).include?(operation.to_sym)) ? YELLOW : CYAN
+        operation = payload.delete(:operation).capitalize
+        args = payload[:args]
+        method_name = args.shift
+
+        name = "  TW::#{operation} #{method_name} (#{event.duration.round(1)}ms)"
+        c = (%i(Encode Decode).include?(operation.to_sym)) ? YELLOW : CYAN
         name = color(name, c, true)
-        "  #{name}#{" #{payload[:args][1] if payload[:args]&.is_a?(Array)}" unless payload.empty?}"
+
+        if args.size == 1 && args[0].is_a?(Hash) && args[0].empty?
+          "  #{name}"
+        else
+          "  #{name} #{args[1]}"
+        end
       end
     end
 

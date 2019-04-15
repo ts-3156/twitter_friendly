@@ -7,8 +7,8 @@
 /spec/reports/
 /tmp/
 
-*.log
 /.pryrc
 /.env
-/.twitter_friendly
+/log/
+/cache/
 /.idea

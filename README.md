@@ -22,7 +22,8 @@ ids = []
 begin
   ids = client.follower_ids('yousuck2020')
 rescue Twitter::Error::TooManyRequests => e
-  sleep client.rate_limit.follower_ids[:reset_in]
+  seconds = e.rate_limit.reset_in.to_i # or client.rate_limit.follower_ids[:reset_in]
+  sleep seconds
   retry
 end
 

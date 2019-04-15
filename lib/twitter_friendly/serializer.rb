@@ -4,14 +4,14 @@ require 'oj'
 module TwitterFriendly
   class Serializer
     class << self
-      def encode(obj, options = {})
-        Instrumenter.perform_encode(options) do
+      def encode(obj, args:)
+        Instrumenter.perform_encode(args: args) do
           (!!obj == obj) ? obj : coder.encode(obj)
         end
       end
 
-      def decode(str, options = {})
-        Instrumenter.perform_decode(options) do
+      def decode(str, args:)
+        Instrumenter.perform_decode(args: args) do
           str.kind_of?(String) ? coder.decode(str) : str
         end
       end
@@ -31,13 +31,13 @@ module TwitterFriendly
 
       module_function
 
-      def perform_encode(options, &block)
-        payload = {operation: 'encode', args: options[:args]}
+      def perform_encode(args:, &block)
+        payload = {operation: 'encode', args: args}
         ::ActiveSupport::Notifications.instrument('encode.twitter_friendly', payload) { yield(payload) }
       end
 
-      def perform_decode(options, &block)
-        payload = {operation: 'decode', args: options[:args]}
+      def perform_decode(args:, &block)
+        payload = {operation: 'decode', args: args}
         ::ActiveSupport::Notifications.instrument('decode.twitter_friendly', payload) { yield(payload) }
       end
     end
