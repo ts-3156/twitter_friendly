@@ -12,14 +12,14 @@ module TwitterFriendly
 
     describe '.encode' do
       it do
-        expect(Serializer.encode(a: 1)).to eq(encode(a: 1))
+        expect(Serializer.encode({a: 1}, args: [:anything])).to eq(encode(a: 1))
       end
     end
 
     describe '.decode' do
       it do
         str = JSON.dump(a: 1)
-        expect(Serializer.decode(str)).to eq(decode(str))
+        expect(Serializer.decode(str, args: [:anything])).to eq(decode(str))
       end
     end
 

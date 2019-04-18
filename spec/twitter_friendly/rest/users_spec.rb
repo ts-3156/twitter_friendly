@@ -22,7 +22,7 @@ module TwitterFriendly
 
       describe '#verify_credentials' do
         it do
-          expect(internal_client).to receive(:verify_credentials).with(skip_status: true)
+          expect(internal_client).to receive(:verify_credentials).with(include_entities: false, skip_status: true, include_email: true)
           client.verify_credentials
         end
       end
@@ -51,8 +51,9 @@ module TwitterFriendly
       describe '#users' do
         subject { client.users(ids) }
         let(:ids) { [id] }
+        let(:return_value) { ids.map {|id| {id: id}} }
         it do
-          expect(internal_client).to receive(:users).with(ids, {})
+          expect(internal_client).to receive(:users).with(ids, {}).and_return(return_value)
           subject
         end
 
@@ -63,7 +64,7 @@ module TwitterFriendly
           let(:ids) { Array.new(101) {id} }
           it do
             ids.each_slice(Users::MAX_USERS_PER_REQUEST).each do |ids_array|
-              expect(internal_client).to receive(:users).with(ids_array, {})
+              expect(internal_client).to receive(:users).with(ids_array, {}).and_return(return_value)
             end
             subject
           end

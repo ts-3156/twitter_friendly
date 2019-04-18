@@ -23,7 +23,7 @@ module TwitterFriendly
 
     describe '#encode' do
       let(:obj) { Object.new }
-      let(:options) { {something: true} }
+      let(:options) { {args: [:anything]} }
       it do
         expect(Serializer).to receive(:encode).with(obj, options)
         instance.send(:encode, obj, options)
@@ -32,7 +32,7 @@ module TwitterFriendly
 
     describe '#decode' do
       let(:str) { 'str' }
-      let(:options) { {something: true} }
+      let(:options) { {args: [:anything]} }
       it do
         expect(Serializer).to receive(:decode).with(str, options)
         instance.send(:decode, str, options)
@@ -50,7 +50,7 @@ module TwitterFriendly
 
     describe '#fetch' do
       let(:key) { 'key' }
-      let(:serialize_options) { {something: false, args: {anything: true}} }
+      let(:serialize_options) { {args: [:anything]} }
 
       it 'calls internal fetch' do
         expect(internal_client).to receive(:fetch).with(key)
