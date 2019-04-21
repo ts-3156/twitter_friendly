@@ -72,7 +72,7 @@ module TwitterFriendly
       end
 
       def decode(str)
-        @coder.load(str, symbol_keys: true)
+        @coder.load(str, symbol_keys: true, mode: :compat)
       end
     end
   end
