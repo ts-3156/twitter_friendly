@@ -50,13 +50,13 @@ module TwitterFriendly
 
         context 'Without cursor' do
           it do
-            expect(client).to receive(:fetch_resources_with_cursor).with(:memberships, id, receive_options)
+            expect(client).to receive(:fetch_resources_with_cursor).with(:memberships, 1000, id, receive_options)
             client.memberships(id)
           end
 
           context 'Without params' do
             it do
-              expect(client).to receive(:fetch_resources_with_cursor).with(:memberships, receive_options)
+              expect(client).to receive(:fetch_resources_with_cursor).with(:memberships, 1000, receive_options)
               client.memberships
             end
           end
@@ -86,13 +86,13 @@ module TwitterFriendly
 
         context 'Without cursor' do
           it do
-            expect(client).to receive(:fetch_resources_with_cursor).with(:list_members, id, receive_options)
+            expect(client).to receive(:fetch_resources_with_cursor).with(:list_members, 5000, id, receive_options)
             client.list_members(id)
           end
 
           context 'Without params' do
             it do
-              expect(client).to receive(:fetch_resources_with_cursor).with(:list_members, receive_options)
+              expect(client).to receive(:fetch_resources_with_cursor).with(:list_members, 5000, receive_options)
               client.list_members
             end
           end

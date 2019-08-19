@@ -15,10 +15,15 @@ module TwitterFriendly
         end
       end
 
-      def fetch_resources_with_cursor(method_name, *args)
+      def fetch_resources_with_cursor(method_name, max_count, *args)
         options = args.dup.extract_options!
 
-        collect_with_cursor([], -1) do |next_cursor|
+        total_count = options.delete(:count) || max_count
+        call_count = total_count / max_count + (total_count % max_count == 0 ? 0 : 1)
+        options[:count] = [max_count, total_count].min
+        collect_options = {call_count: call_count, total_count: total_count}
+
+        collect_with_cursor([], -1, collect_options) do |next_cursor|
           options[:cursor] = next_cursor unless next_cursor.nil?
           send(method_name, *args)
         end
@@ -37,20 +42,27 @@ module TwitterFriendly
         end
       end
 
-      def collect_with_cursor(collection, cursor, &block)
+      def collect_with_cursor(collection, cursor, collect_options, &block)
         response = yield(cursor)
-        return collection if response.nil?
+        if response.nil?
+          logger.warn "#{__method__}: response is nil." if respond_to?(:logger)
+          return collection
+        end
 
         # Notice: If you call response.to_a, it automatically fetch all results and the results are not cached.
 
         # cursor でリクエストするメソッドは cursor ごとキャッシュに保存するので、このメソッドで
         # ids, users または lists でリソースを取得する必要がある。
-        collection.concat(response[:ids] || response[:users] || response[:lists])
+        fetched_resources = response[:ids] || response[:users] || response[:lists]
+        if fetched_resources.nil? || fetched_resources.empty?
+          logger.warn "#{__method__}: fetched_resources is nil or empty." if respond_to?(:logger)
+        end
+        collection.concat(fetched_resources)
 
-        if response[:next_cursor].zero?
+        if response[:next_cursor].zero? || (collect_options[:call_count] -= 1) < 1
           collection.flatten
         else
-          collect_with_cursor(collection, response[:next_cursor], &block)
+          collect_with_cursor(collection, response[:next_cursor], collect_options, &block)
         end
       end
     end

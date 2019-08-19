@@ -24,7 +24,7 @@ module TwitterFriendly
         if options.has_key?(:cursor)
           @twitter.friend_ids(*args)&.attrs
         else
-          fetch_resources_with_cursor(__method__, *args)
+          fetch_resources_with_cursor(__method__, MAX_IDS_PER_REQUEST, *args)
         end
       end
 
@@ -35,7 +35,7 @@ module TwitterFriendly
         if options.has_key?(:cursor)
           @twitter.follower_ids(*args)&.attrs
         else
-          fetch_resources_with_cursor(__method__, *args)
+          fetch_resources_with_cursor(__method__, MAX_IDS_PER_REQUEST, *args)
         end
       end
 

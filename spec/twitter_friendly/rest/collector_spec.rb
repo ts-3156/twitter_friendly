@@ -28,7 +28,7 @@ module TwitterFriendly
         let(:method_name) { :hello }
         it do
           expect(client).to receive(:hello).with(any_args)
-          client.fetch_resources_with_cursor(method_name)
+          client.fetch_resources_with_cursor(method_name, 123)
         end
       end
 

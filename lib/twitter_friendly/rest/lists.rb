@@ -23,7 +23,7 @@ module TwitterFriendly
         if options.has_key?(:cursor)
           @twitter.memberships(*args)&.attrs
         else
-          fetch_resources_with_cursor(__method__, *args)
+          fetch_resources_with_cursor(__method__, MAX_LISTS_PER_REQUEST, *args)
         end
       end
 
@@ -44,7 +44,7 @@ module TwitterFriendly
         if options.has_key?(:cursor)
           @twitter.list_members(*args)&.attrs
         else
-          fetch_resources_with_cursor(__method__, *args)
+          fetch_resources_with_cursor(__method__, MAX_MEMBERS_PER_REQUEST, *args)
         end
       end
     end
