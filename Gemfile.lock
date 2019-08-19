@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    twitter_friendly (1.2.3)
+    twitter_friendly (2.0.0.pre.alpha)
       activesupport (>= 4.2, < 6.0)
       oj (~> 3.7.6)
       parallel (~> 1.12.1)
