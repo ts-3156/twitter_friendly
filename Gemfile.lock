@@ -1,11 +1,11 @@
 PATH
   remote: .
   specs:
-    twitter_friendly (2.0.0.pre.alpha)
+    twitter_friendly (2.0.1.pre.alpha)
       activesupport (>= 4.2, < 6.0)
-      oj (~> 3.7.6)
-      parallel (~> 1.12.1)
-      twitter (~> 6.2.0)
+      oj (~> 3.7)
+      parallel (~> 1.12)
+      twitter (~> 6.2)
 
 GEM
   remote: https://rubygems.org/
