@@ -55,19 +55,6 @@ Or install it yourself as:
 $ gem install twitter_friendly
 ```
 
-## Configuration
-
-You can pass configuration options as a block to `TwitterFriendly::Client.new` just like the below.
-
-```ruby
-client = TwitterFriendly::Client.new do |config|
-  config.consumer_key        = "YOUR_CONSUMER_KEY"
-  config.consumer_secret     = "YOUR_CONSUMER_SECRET"
-  config.access_token        = "YOUR_ACCESS_TOKEN"
-  config.access_token_secret = "YOUR_ACCESS_SECRET"
-end
-```
-
 ## Useful features
 
 After configuring a `client`, you can do the following things.
