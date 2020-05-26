@@ -34,7 +34,7 @@ Gem::Specification.new do |spec|
   spec.required_rubygems_version = ">= 1.3.6"
   spec.required_ruby_version = ">= 2.3.0"
 
-  spec.add_dependency "activesupport", [">= 4.2", "< 6.0"]
+  spec.add_dependency "activesupport", ">= 4.2", "< 7.0"
   spec.add_dependency 'twitter', '~> 6.2'
   spec.add_dependency 'parallel', '~> 1.12'
   spec.add_dependency 'oj', '~> 3.7'
